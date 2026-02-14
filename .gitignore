@@ -1,0 +1,28 @@
+# Only track dashboard PWA files — ignore everything else
+*
+
+# Whitelist dashboard files
+!.gitignore
+!tango-dashboard.html
+!tango-system.css
+!sw.js
+!manifest.json
+!app-icon-192.png
+!app-icon-512.png
+!*.LOGO.png
+!! LOGO.png
+
+# Whitelist fonts directory
+!fonts/
+!fonts/**
+
+# Ignore non-essential font variants to keep it lean
+fonts/**/*Italic*
+fonts/**/*Black*
+fonts/**/*Text*
+fonts/Art Dystopia*
+
+# Ignore everything else
+Tango Images/
+graza/
+brand-system/

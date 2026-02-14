@@ -1,0 +1,719 @@
+/* ================================================================
+   TANGO DESIGN SYSTEM — Shared Foundation
+   tango-system.css
+   ================================================================
+   Include this file in every Tango page BEFORE page-specific styles.
+   Contains: fonts, tokens, reset, noise overlay, button system,
+   nav, footer, and enforced design rules.
+   ================================================================ */
+
+
+/* ================================================================
+   @FONT-FACE — All 4 Tango Typefaces
+   ================================================================ */
+
+/* American Typewriter — Bold Condensed (headlines only) */
+@font-face {
+  font-family: 'American Typewriter';
+  src: url('fonts/american typewriter/AmericanTypewriterStd-BdCnd.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* GT Pressura Mono — Light (300) */
+@font-face {
+  font-family: 'GT Pressura';
+  src: url('fonts/gt-pressura/GT-Pressura-Mono-Light-Trial.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+/* GT Pressura Mono — Regular (400) */
+@font-face {
+  font-family: 'GT Pressura';
+  src: url('fonts/gt-pressura/GT-Pressura-Mono-Regular-Trial.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* GT Pressura Mono — Medium (500) */
+@font-face {
+  font-family: 'GT Pressura';
+  src: url('fonts/gt-pressura/GT-Pressura-Mono-Medium-Trial.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+/* GT Pressura Mono — Bold (700) */
+@font-face {
+  font-family: 'GT Pressura';
+  src: url('fonts/gt-pressura/GT-Pressura-Mono-Bold-Trial.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Beast — Display / accent font */
+@font-face {
+  font-family: 'Beast';
+  src: url('fonts/beast/Beast-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Art Dystopia — Display / giant statement font */
+@font-face {
+  font-family: 'Art Dystopia';
+  src: url('fonts/Art Dystopia_2.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+/* ================================================================
+   :ROOT — Design Tokens
+   ================================================================ */
+:root {
+  --bg: #FFFFFF;
+  --text: #000000;
+  --yellow: #FFE533;
+  --green: #5DDB2F;
+  --orange: #FF9500;
+  --white: #FFFFFF;
+  --muted: #666666;
+  --font-headline: 'American Typewriter', 'Courier New', monospace;
+  --font-body: 'GT Pressura', 'Courier New', monospace;
+  --radius: 30px;
+  --border: 1px solid var(--text);
+  --max-width: 1280px;
+}
+
+
+/* ================================================================
+   RESET
+   ================================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  position: relative;
+}
+
+a, button, [data-content] {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* No horizontal rules anywhere */
+hr {
+  display: none !important;
+}
+
+
+/* ================================================================
+   NOISE TEXTURE OVERLAY — Covers entire page
+   ================================================================ */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.56;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+}
+
+
+/* ================================================================
+   DESIGN RULE ENFORCEMENT
+   ================================================================
+
+   GT Pressura Mono:
+     - Always monospaced (handled by font-family declaration)
+     - Always black text (#000000) unless inside a pill
+     - Minimum font-size: 12px
+
+   American Typewriter:
+     - Always text-transform: capitalize (Title Case, NOT uppercase)
+     - Minimum font-size: 14px
+
+   Art Dystopia:
+     - ONLY for huge display headers (hero titles, footer "Real Sauce")
+     - Never for stat values, card amounts, or UI elements
+
+   Containers:
+     - box-shadow: 0 0 60px rgba(0,0,0,0.20) — no offset, 60px blur, 20% opacity
+     - Minimum 20px gap between containers
+
+   These rules are enforced by the class definitions below.
+   Page-specific styles should NOT override these.
+   ================================================================ */
+
+
+/* ================================================================
+   OFFSET SHADOW BUTTON SYSTEM — .btn
+   ================================================================
+   The Tango button pattern:
+     - Element has color: transparent (hides real text)
+     - ::before shows the visible pill via content: attr(data-content)
+     - ::after is the solid black offset shadow behind the pill
+     - Hover: ::before translates down/right to meet the shadow
+
+   Usage:
+     <button class="btn" data-content="Add to Cart">Add to Cart</button>
+     <a class="btn" data-content="Shop Now">Shop Now</a>
+
+   Modifiers:
+     .btn--green  (default) — green pill, hover to yellow
+     .btn--orange           — orange pill, hover to black/orange text
+     .btn--yellow           — yellow pill, hover to black/white text
+   ================================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: transparent;
+  padding: 10px 28px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  line-height: 1;
+}
+
+/* ::before = the visible pill (shows text via data-content) */
+.btn::before {
+  content: attr(data-content);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--green);
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  padding: 10px 28px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: #000000;
+  text-transform: uppercase;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ::after = the solid black offset shadow */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  z-index: 1;
+  background-color: var(--text);
+  pointer-events: none;
+}
+
+/* Hover: pill slides into shadow, bg goes yellow */
+.btn:hover::before {
+  transform: translate(3px, 3px);
+  background-color: var(--yellow);
+  color: #000000;
+}
+
+/* Active: instant black flash */
+.btn:active::before {
+  background-color: var(--text) !important;
+  color: var(--white) !important;
+  transform: translate(3px, 3px);
+  transition: none;
+}
+
+/* --orange modifier */
+.btn--orange::before {
+  background-color: var(--orange);
+}
+.btn--orange:hover::before {
+  transform: translate(3px, 3px);
+  background-color: var(--text);
+  color: var(--orange);
+}
+
+/* --yellow modifier */
+.btn--yellow::before {
+  background-color: var(--yellow);
+}
+.btn--yellow:hover::before {
+  transform: translate(3px, 3px);
+  background-color: var(--text);
+  color: var(--white);
+}
+
+
+/* ================================================================
+   NAV — Logo left, pill links right
+   ================================================================ */
+.nav {
+  position: relative;
+  z-index: 100;
+  background: transparent;
+  padding: 12px 24px;
+  transition: background 0.3s;
+}
+
+.nav-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo img {
+  height: 56px;
+  width: auto;
+}
+
+/* Nav links — orange offset shadow pill buttons, same pattern as footer */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  padding: 8px 18px;
+  cursor: pointer;
+}
+.nav-links a::before {
+  content: attr(data-content);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--orange);
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: #000000;
+  text-transform: uppercase;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  z-index: 1;
+  background-color: var(--text);
+  pointer-events: none;
+}
+.nav-links a:hover::before {
+  transform: translate(2px, 2px);
+  background-color: var(--text);
+  color: var(--orange);
+}
+.nav-links a:active::before {
+  background-color: var(--text) !important;
+  color: var(--white) !important;
+  transform: translate(2px, 2px);
+  transition: none;
+}
+
+/* Cart button — yellow pill, same offset shadow pattern */
+.nav-cart {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  padding: 8px 18px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.nav-cart::before {
+  content: attr(data-content);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background-color: var(--yellow);
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  padding: 8px 18px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #000000;
+  text-transform: uppercase;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+}
+.nav-cart::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  z-index: 1;
+  background-color: var(--text);
+  pointer-events: none;
+}
+.nav-cart:hover::before {
+  transform: translate(2px, 2px);
+  background-color: var(--text);
+  color: var(--yellow);
+}
+
+/* Scrolled state (product page uses fixed nav) */
+.nav--scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+.nav--scrolled .nav-logo img {
+  filter: none;
+}
+
+/* Responsive: stack nav on mobile */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+  .nav-cart {
+    display: none;
+  }
+  .nav-inner {
+    justify-content: center;
+  }
+}
+
+
+/* ================================================================
+   FOOTER
+   ================================================================ */
+.footer {
+  margin: 0;
+  padding: 80px 48px 0;
+  background: var(--green);
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Footer noise overlay — slightly lighter than page noise */
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Ensure all footer content sits above the noise layer */
+.footer-inner,
+.footer-bottom,
+.footer-giant-logo,
+.footer-real-sauce,
+.footer-real-sauce-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* Footer layout — flex for collection, grid for product */
+.footer-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+/* Email signup section */
+.footer-email-section {
+  padding-right: 48px;
+  flex-shrink: 0;
+}
+.footer-email-section p {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.4;
+  margin-bottom: 40px;
+  color: #000000;
+}
+
+/* Email input bar */
+.footer-email-input {
+  display: flex;
+  align-items: center;
+  background: var(--text);
+  border: 1px solid var(--text);
+  border-radius: 30px;
+  padding: 12px 12px 12px 24px;
+  max-width: 400px;
+}
+.footer-email-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 18px;
+  color: var(--white);
+  outline: none;
+}
+.footer-email-input input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Email submit button */
+.footer-email-submit {
+  background: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text);
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+/* Footer columns container */
+.footer-cols {
+  display: flex;
+  gap: 48px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Column title — American Typewriter, Title Case */
+.footer-col-title {
+  font-family: var(--font-headline);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  letter-spacing: 0;
+  text-transform: capitalize;
+  color: #000000;
+}
+
+.footer-col ul {
+  list-style: none;
+}
+.footer-col li {
+  margin-bottom: 14px;
+}
+
+/* Footer links — offset shadow button pattern (orange pills) */
+.footer-col a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  padding: 8px 22px;
+  cursor: pointer;
+}
+.footer-col a::before {
+  content: attr(data-content);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--orange);
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  padding: 8px 22px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: #000000;
+  text-transform: uppercase;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+}
+.footer-col a::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--text);
+  border-radius: 9999px;
+  z-index: 1;
+  background-color: var(--text);
+  pointer-events: none;
+}
+.footer-col a:hover::before {
+  transform: translate(3px, 3px);
+  background-color: var(--text);
+  color: var(--orange);
+}
+
+/* Footer bottom bar — copyright and legal links */
+.footer-bottom {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 12px 16px;
+  border-top: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+  z-index: 3;
+}
+.footer-bottom a {
+  color: rgba(0, 0, 0, 0.5);
+  margin-right: 20px;
+}
+.footer-bottom a:hover {
+  color: var(--text);
+}
+
+/* Giant logo — hidden by default */
+.footer-giant-logo {
+  display: none;
+}
+
+/* "REAL SAUCE" — Art Dystopia statement spanning full width */
+.footer-real-sauce-wrapper {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.footer-real-sauce {
+  font-family: 'Art Dystopia', var(--font-headline);
+  font-size: clamp(140px, 22vw, 400px);
+  text-transform: uppercase;
+  color: var(--yellow);
+  text-align: center;
+  line-height: 0.9;
+  padding: 100px 0 0;
+  margin-bottom: -0.25em;
+  letter-spacing: -0.05em;
+  opacity: 1;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+
+/* ================================================================
+   RESPONSIVE — Shared breakpoints
+   ================================================================ */
+@media (max-width: 768px) {
+  .footer-inner {
+    flex-direction: column;
+  }
+  .footer-cols {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+  .footer-email-section {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 80px 24px 0;
+  }
+}
