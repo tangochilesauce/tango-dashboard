@@ -4,6 +4,7 @@
 # Whitelist dashboard files
 !.gitignore
 !tango-dashboard.html
+!index.html
 !tango-system.css
 !sw.js
 !manifest.json
