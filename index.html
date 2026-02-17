@@ -1879,9 +1879,33 @@
       id: 'exp-12165',
       channel: 'EXP Corp',
       title: 'PO #12165',
-      value: '$2,650',
-      date: 'Pickup: TBD',
+      value: '$3,750',
+      date: 'Pickup: Feb 19',
       stage: 'processing',
+      shipTo: 'EXP Warehouse, 28-13 119th St, College Point, NY 11354',
+      notes: 'Corrected: Mango $25/case (was $5 typo on PO). Added 20 Sriracha (not on original PO). Mild bottles need cap swap (wrong color caps).',
+      items: [
+        { sku: 'TH01', flavor: 'Truffle',  cases: 10, price: 50, packed: 0 },
+        { sku: 'TH02', flavor: 'Hot',      cases: 50, price: 25, packed: 10 },
+        { sku: 'TH03', flavor: 'Mild',     cases: 30, price: 25, packed: 0 },
+        { sku: 'TH04', flavor: 'Mango',    cases: 30, price: 25, packed: 0 },
+        { sku: 'TH05', flavor: 'Sriracha', cases: 20, price: 25, packed: 0 }
+      ],
+      checklist: [
+        { id: 'c1',  text: 'Swap Mild caps (garage — wrong color)', done: false, when: 'today' },
+        { id: 'c2',  text: 'Haul bottles upstairs (all flavors except Sriracha shortage)', done: false, when: 'today' },
+        { id: 'c3',  text: 'Tape bottoms on all 48 boxes', done: false, when: 'today' },
+        { id: 'c4',  text: 'Fill + tape + sticker: 30 Mango cases', done: false, when: 'today' },
+        { id: 'c5',  text: 'Fill + tape + sticker: 10 Truffle cases', done: false, when: 'today' },
+        { id: 'c6',  text: 'Fill + tape + sticker: 8 Sriracha cases (48 bottles = all we have)', done: false, when: 'today' },
+        { id: 'c7',  text: 'Get more boxes (need 92 more) — order or pick up', done: false, when: 'today' },
+        { id: 'c8',  text: 'Pack 50 Hot cases (40 new + 10 already done at kitchen)', done: false, when: 'tomorrow' },
+        { id: 'c9',  text: 'Pack 30 Mild cases', done: false, when: 'tomorrow' },
+        { id: 'c10', text: 'Pack remaining 12 Sriracha cases (need 72 more bottles)', done: false, when: 'tomorrow' },
+        { id: 'c11', text: 'Palletize all 140 cases', done: false, when: 'tomorrow' },
+        { id: 'c12', text: 'Generate BOL', done: false, when: 'tomorrow' },
+        { id: 'c13', text: 'Confirm pickup time with EXP', done: false, when: 'tomorrow' }
+      ],
       docs: {
         po:  '/distribution/exp/PO-12165/PO12165 TANGO.pdf',
         bol: '/distribution/exp/PO-12165/BOL-12165.pdf',
@@ -1927,8 +1951,31 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
   }
 
-  let orders = load() || JSON.parse(JSON.stringify(DEFAULT_ORDERS));
-  if (!load()) save(orders);
+  let orders = load();
+  if (!orders) {
+    orders = JSON.parse(JSON.stringify(DEFAULT_ORDERS));
+    save(orders);
+  } else {
+    // Merge new default fields (items, checklist, shipTo, notes) into existing stored orders
+    var updated = false;
+    DEFAULT_ORDERS.forEach(function(def) {
+      var stored = orders.find(function(o) { return o.id === def.id; });
+      if (stored) {
+        ['items', 'checklist', 'shipTo', 'notes'].forEach(function(key) {
+          if (def[key] && !stored[key]) {
+            stored[key] = JSON.parse(JSON.stringify(def[key]));
+            updated = true;
+          }
+        });
+        // Update value if changed in defaults
+        if (def.value !== stored.value && def.value) {
+          stored.value = def.value;
+          updated = true;
+        }
+      }
+    });
+    if (updated) save(orders);
+  }
 
   // ── Render ─────────────────────────────────────────────────
   function render() {
@@ -2046,6 +2093,22 @@
       // Fallback: prompt so user can copy
       prompt('Document path:', fullPath);
     });
+  });
+
+  // ── Click card to open order detail ────────────────────────
+  var clickStartX, clickStartY;
+  document.getElementById('orders-pipeline').addEventListener('mousedown', function(e) {
+    clickStartX = e.clientX;
+    clickStartY = e.clientY;
+  });
+  document.getElementById('orders-pipeline').addEventListener('click', function(e) {
+    // Skip if it was a drag (moved more than 5px)
+    if (Math.abs(e.clientX - clickStartX) > 5 || Math.abs(e.clientY - clickStartY) > 5) return;
+    // Skip if clicking a doc button
+    if (e.target.closest('.pipe-card__doc')) return;
+    var card = e.target.closest('.pipe-card');
+    if (!card) return;
+    window.location.href = 'order.html?id=' + card.dataset.id;
   });
 
   // ── Touch support for mobile drag ──────────────────────────

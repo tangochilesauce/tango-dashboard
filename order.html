@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Detail — Tango</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tango">
+<link rel="apple-touch-icon" href="app-icon-192.png">
+<meta name="theme-color" content="#1A1A1A">
+
+<link rel="stylesheet" href="tango-system.css">
+<style>
+/* ================================================================
+   ORDER DETAIL PAGE — Page-specific styles
+   ================================================================ */
+
+.order-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* Back link */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 24px;
+  transition: color 0.15s;
+}
+.back-link:hover {
+  color: var(--text);
+}
+
+/* Order header card */
+.order-header {
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.20);
+  padding: 28px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.order-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  border-radius: 20px;
+}
+.order-header > * {
+  position: relative;
+  z-index: 1;
+}
+.order-header__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.order-header__channel {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+.order-header__title {
+  font-family: var(--font-headline);
+  font-size: 28px;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.order-header__meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.order-header__meta-item {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+}
+.order-header__meta-label {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 2px;
+}
+.order-header__ship-to {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.order-header__docs {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+.order-header__notes {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(0,0,0,0.12);
+}
+
+/* Progress bar */
+.progress-section {
+  margin-bottom: 24px;
+}
+.progress-bar {
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.20);
+  padding: 20px 28px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  border-radius: 20px;
+}
+.progress-bar > * {
+  position: relative;
+  z-index: 1;
+}
+.progress-bar__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.progress-bar__text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.progress-bar__pct {
+  font-family: var(--font-headline);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: capitalize;
+}
+.progress-bar__track {
+  width: 100%;
+  height: 18px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 9999px;
+  border: 1px solid var(--text);
+  overflow: hidden;
+}
+.progress-bar__fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+/* Line items table */
+.items-section {
+  margin-bottom: 24px;
+}
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 13px;
+}
+.items-table thead th {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-align: left;
+  padding: 12px 16px 10px;
+}
+.items-table thead th:last-child,
+.items-table thead th.col-right {
+  text-align: right;
+}
+.items-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px dashed rgba(0,0,0,0.12);
+  vertical-align: middle;
+  color: var(--text);
+}
+.items-table tbody td.col-right {
+  text-align: right;
+}
+.items-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.items-table .col-flavor {
+  font-family: var(--font-headline);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.items-table .col-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+.items-table .col-packed {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.items-table .col-remaining {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.items-table tfoot td {
+  padding: 14px 16px;
+  font-weight: 700;
+  border-top: 2px solid var(--text);
+}
+
+/* Packed count — editable */
+.packed-input {
+  width: 48px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid rgba(0,0,0,0.2);
+  border-radius: 6px;
+  padding: 4px;
+  background: transparent;
+  color: var(--text);
+}
+.packed-input:focus {
+  outline: none;
+  border-color: var(--orange);
+  box-shadow: 0 0 0 2px rgba(255,149,0,0.2);
+}
+
+/* Row status indicators */
+.items-table tbody tr.row-done {
+  opacity: 0.5;
+}
+.items-table tbody tr.row-done .col-flavor {
+  text-decoration: line-through;
+}
+
+/* Checklist */
+.checklist-section {
+  margin-bottom: 24px;
+}
+.checklist-group-label {
+  font-family: var(--font-headline);
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.checklist-group-label__count {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  background: rgba(0,0,0,0.06);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.checklist-item:last-child {
+  border-bottom: none;
+}
+.checklist-item.is-done {
+  opacity: 0.45;
+}
+.checklist-item.is-done .checklist-item__text {
+  text-decoration: line-through;
+}
+.checklist-item__check {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--text);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.checklist-item.is-done .checklist-item__check {
+  background: var(--green);
+  border-color: var(--green);
+}
+.checklist-item.is-done .checklist-item__check::after {
+  content: '\2713';
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+.checklist-item__text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.4;
+  padding-top: 1px;
+}
+
+/* Section header reuse */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+}
+.section-header__title {
+  font-family: var(--font-headline);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: capitalize;
+}
+.section-header__badge {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Card wrapper for table + checklist */
+.card {
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.20);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  border-radius: 20px;
+}
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Doc buttons reuse from pipe-card */
+.doc-btn {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--text);
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+  background: transparent;
+}
+.doc-btn:hover {
+  background: var(--text);
+  color: var(--bg);
+}
+.doc-btn--missing {
+  border-color: rgba(0,0,0,0.15);
+  color: var(--muted);
+  border-style: dashed;
+  cursor: default;
+}
+
+/* Stage pill */
+.stage-pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--text);
+}
+.stage-pill--new { background: rgba(0,0,0,0.06); }
+.stage-pill--processing { background: var(--yellow); }
+.stage-pill--shipped { background: var(--orange); }
+.stage-pill--paid { background: var(--green); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .order-header__meta {
+    gap: 16px;
+  }
+  .order-header {
+    padding: 20px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .items-table {
+    font-size: 12px;
+  }
+  .items-table thead th,
+  .items-table tbody td {
+    padding: 10px 10px;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo"><img src="! LOGO.png" alt="Tango Chile Sauce"></a>
+    <div class="nav-links">
+      <a href="tango-collection.html" data-content="Shop">Shop</a>
+      <a href="#" data-content="Our Story">Our Story</a>
+      <a href="#" data-content="Recipes">Recipes</a>
+      <a href="#" data-content="Find Us">Find Us</a>
+    </div>
+    <a href="#" class="nav-cart" data-content="Cart (0)">Cart (0)</a>
+  </div>
+</div>
+
+<div class="order-page" style="padding-top:80px;">
+
+  <a href="index.html" class="back-link">&larr; Back to Dashboard</a>
+
+  <!-- ORDER HEADER -->
+  <div class="order-header" id="order-header">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-section">
+    <div class="progress-bar" id="progress-bar">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- LINE ITEMS -->
+  <div class="items-section">
+    <div class="section-header">
+      <h2 class="section-header__title">Line Items</h2>
+      <span class="section-header__badge">Click packed count to edit</span>
+    </div>
+    <div class="card">
+      <table class="items-table" id="items-table">
+        <!-- Populated by JS -->
+      </table>
+    </div>
+  </div>
+
+  <!-- CHECKLIST -->
+  <div class="checklist-section" id="checklist-section">
+    <!-- Populated by JS -->
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- ORDER DETAIL — JavaScript                                     -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  var STORAGE_KEY = 'tango-orders';
+
+  // ── Get order ID from URL ────────────────────────────────────
+  var params = new URLSearchParams(window.location.search);
+  var orderId = params.get('id');
+
+  if (!orderId) {
+    document.getElementById('order-header').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted);">No order ID provided. <a href="index.html">Back to dashboard</a></p>';
+    return;
+  }
+
+  // ── Load orders from localStorage ────────────────────────────
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }
+  function save(orders) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+  }
+
+  var orders = load();
+  if (!orders) {
+    document.getElementById('order-header').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted);">No orders found. <a href="index.html">Back to dashboard</a></p>';
+    return;
+  }
+
+  var order = orders.find(function(o) { return o.id === orderId; });
+  if (!order) {
+    document.getElementById('order-header').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted);">Order not found: ' + orderId + '. <a href="index.html">Back to dashboard</a></p>';
+    return;
+  }
+
+  // ── Set page title ───────────────────────────────────────────
+  document.title = order.title + ' — ' + order.channel + ' — Tango';
+
+  // ── Render header ────────────────────────────────────────────
+  function renderHeader() {
+    var stageClass = 'stage-pill--' + order.stage;
+    var stageLabel = order.stage.charAt(0).toUpperCase() + order.stage.slice(1);
+
+    var docsHTML = '';
+    if (order.docs) {
+      ['po','bol','inv'].forEach(function(type) {
+        var label = type === 'po' ? 'PO' : type === 'bol' ? 'BOL' : 'Invoice';
+        if (order.docs[type]) {
+          docsHTML += '<button class="doc-btn" data-doc="' + type + '">' + label + '</button>';
+        } else {
+          docsHTML += '<span class="doc-btn doc-btn--missing">' + label + '</span>';
+        }
+      });
+    }
+
+    var totalCases = 0;
+    var totalPacked = 0;
+    if (order.items) {
+      order.items.forEach(function(item) {
+        totalCases += item.cases;
+        totalPacked += item.packed || 0;
+      });
+    }
+
+    document.getElementById('order-header').innerHTML =
+      '<div class="order-header__channel">' + order.channel + '</div>' +
+      '<div class="order-header__top">' +
+        '<h1 class="order-header__title">' + order.title + '</h1>' +
+        '<span class="stage-pill ' + stageClass + '">' + stageLabel + '</span>' +
+      '</div>' +
+      '<div class="order-header__meta">' +
+        '<div class="order-header__meta-item">' +
+          '<span class="order-header__meta-label">Value</span>' +
+          order.value +
+        '</div>' +
+        '<div class="order-header__meta-item">' +
+          '<span class="order-header__meta-label">Pickup</span>' +
+          (order.date || 'TBD') +
+        '</div>' +
+        '<div class="order-header__meta-item">' +
+          '<span class="order-header__meta-label">Cases</span>' +
+          totalPacked + ' / ' + totalCases +
+        '</div>' +
+      '</div>' +
+      (order.shipTo ? '<div class="order-header__ship-to">Ship to: ' + order.shipTo + '</div>' : '') +
+      (docsHTML ? '<div class="order-header__docs">' + docsHTML + '</div>' : '') +
+      (order.notes ? '<div class="order-header__notes">' + order.notes + '</div>' : '');
+  }
+
+  // ── Render progress bar ──────────────────────────────────────
+  function renderProgress() {
+    var totalCases = 0;
+    var totalPacked = 0;
+    if (order.items) {
+      order.items.forEach(function(item) {
+        totalCases += item.cases;
+        totalPacked += item.packed || 0;
+      });
+    }
+    var pct = totalCases > 0 ? Math.round((totalPacked / totalCases) * 100) : 0;
+    var fillColor = pct === 100 ? 'var(--green)' : pct > 50 ? 'var(--yellow)' : 'var(--orange)';
+
+    document.getElementById('progress-bar').innerHTML =
+      '<div class="progress-bar__label">' +
+        '<span class="progress-bar__text">' + totalPacked + ' of ' + totalCases + ' cases packed</span>' +
+        '<span class="progress-bar__pct">' + pct + '%</span>' +
+      '</div>' +
+      '<div class="progress-bar__track">' +
+        '<div class="progress-bar__fill" style="width:' + pct + '%;background:' + fillColor + '"></div>' +
+      '</div>';
+  }
+
+  // ── Render line items table ──────────────────────────────────
+  function renderItems() {
+    if (!order.items || !order.items.length) {
+      document.getElementById('items-table').innerHTML = '<tr><td style="padding:20px;color:var(--muted);">No line items</td></tr>';
+      return;
+    }
+
+    var totalCases = 0, totalPacked = 0, totalValue = 0;
+
+    var rows = order.items.map(function(item, i) {
+      var remaining = item.cases - (item.packed || 0);
+      var isDone = remaining <= 0;
+      totalCases += item.cases;
+      totalPacked += item.packed || 0;
+      totalValue += item.cases * item.price;
+
+      return '<tr class="' + (isDone ? 'row-done' : '') + '">' +
+        '<td class="col-flavor">' + item.flavor + '</td>' +
+        '<td class="col-num">' + item.sku + '</td>' +
+        '<td class="col-num">' + item.cases + '</td>' +
+        '<td class="col-packed"><input type="number" class="packed-input" data-index="' + i + '" value="' + (item.packed || 0) + '" min="0" max="' + item.cases + '"></td>' +
+        '<td class="col-remaining col-right">' + remaining + '</td>' +
+        '<td class="col-num col-right">$' + (item.cases * item.price).toLocaleString() + '</td>' +
+      '</tr>';
+    }).join('');
+
+    document.getElementById('items-table').innerHTML =
+      '<thead><tr>' +
+        '<th>Flavor</th>' +
+        '<th>Sku</th>' +
+        '<th>Cases</th>' +
+        '<th>Packed</th>' +
+        '<th class="col-right">Remaining</th>' +
+        '<th class="col-right">Value</th>' +
+      '</tr></thead>' +
+      '<tbody>' + rows + '</tbody>' +
+      '<tfoot><tr>' +
+        '<td colspan="2">Total</td>' +
+        '<td>' + totalCases + '</td>' +
+        '<td>' + totalPacked + '</td>' +
+        '<td class="col-right">' + (totalCases - totalPacked) + '</td>' +
+        '<td class="col-right">$' + totalValue.toLocaleString() + '</td>' +
+      '</tr></tfoot>';
+  }
+
+  // ── Render checklist ─────────────────────────────────────────
+  function renderChecklist() {
+    var container = document.getElementById('checklist-section');
+    if (!order.checklist || !order.checklist.length) {
+      container.innerHTML = '';
+      return;
+    }
+
+    // Group by when
+    var groups = {};
+    order.checklist.forEach(function(item) {
+      var key = item.when || 'other';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    });
+
+    var groupOrder = ['today', 'tomorrow', 'other'];
+    var groupLabels = { today: 'Today (at home)', tomorrow: 'Tomorrow (at kitchen)', other: 'Other' };
+
+    var html = '<div class="section-header"><h2 class="section-header__title">Packing Checklist</h2></div>';
+
+    groupOrder.forEach(function(key) {
+      if (!groups[key]) return;
+      var doneCount = groups[key].filter(function(c) { return c.done; }).length;
+
+      html += '<div class="card" style="margin-bottom:16px;">';
+      html += '<div class="checklist-group-label">' + groupLabels[key] +
+        '<span class="checklist-group-label__count">' + doneCount + '/' + groups[key].length + '</span></div>';
+
+      groups[key].forEach(function(item) {
+        html += '<div class="checklist-item' + (item.done ? ' is-done' : '') + '" data-check-id="' + item.id + '">' +
+          '<div class="checklist-item__check"></div>' +
+          '<span class="checklist-item__text">' + item.text + '</span>' +
+        '</div>';
+      });
+
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ── Render everything ────────────────────────────────────────
+  function renderAll() {
+    renderHeader();
+    renderProgress();
+    renderItems();
+    renderChecklist();
+  }
+
+  renderAll();
+
+  // ── Event: packed count change ───────────────────────────────
+  document.getElementById('items-table').addEventListener('change', function(e) {
+    var input = e.target.closest('.packed-input');
+    if (!input) return;
+    var idx = parseInt(input.dataset.index);
+    var val = parseInt(input.value) || 0;
+    val = Math.max(0, Math.min(val, order.items[idx].cases));
+    order.items[idx].packed = val;
+    input.value = val;
+    save(orders);
+    renderAll();
+  });
+
+  // ── Event: checklist toggle ──────────────────────────────────
+  document.getElementById('checklist-section').addEventListener('click', function(e) {
+    var item = e.target.closest('.checklist-item');
+    if (!item) return;
+    var checkId = item.dataset.checkId;
+    var checkItem = order.checklist.find(function(c) { return c.id === checkId; });
+    if (!checkItem) return;
+    checkItem.done = !checkItem.done;
+    save(orders);
+    renderAll();
+  });
+
+  // ── Event: doc buttons ───────────────────────────────────────
+  document.getElementById('order-header').addEventListener('click', function(e) {
+    var btn = e.target.closest('.doc-btn[data-doc]');
+    if (!btn) return;
+    var docType = btn.dataset.doc;
+    if (!order.docs || !order.docs[docType]) return;
+    var fullPath = '/Projects/\uD83D\uDD25 tango' + order.docs[docType];
+    navigator.clipboard.writeText(fullPath).then(function() {
+      showToast('\uD83D\uDCCB Copied: ' + fullPath.split('/').pop());
+    }).catch(function() {
+      prompt('Document path:', fullPath);
+    });
+  });
+
+  // ── Toast ────────────────────────────────────────────────────
+  function showToast(msg) {
+    var toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:12px;font-size:13px;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.4);opacity:0;transition:opacity .2s';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function() { toast.style.opacity = '1'; });
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      setTimeout(function() { toast.remove(); }, 300);
+    }, 2500);
+  }
+
+})();
+</script>
+
+</body>
+</html>

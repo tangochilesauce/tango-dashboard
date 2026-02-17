@@ -5,6 +5,7 @@
 !.gitignore
 !tango-dashboard.html
 !index.html
+!order.html
 !tango-system.css
 !sw.js
 !manifest.json
