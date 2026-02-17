@@ -2015,19 +2015,37 @@
   });
 
   // ── Document export (open file) ────────────────────────────
+  function showToast(msg) {
+    var toast = document.createElement('div');
+    toast.textContent = msg;
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:12px;font-size:13px;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.4);opacity:0;transition:opacity .2s';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function() { toast.style.opacity = '1'; });
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      setTimeout(function() { toast.remove(); }, 300);
+    }, 2500);
+  }
+
   document.getElementById('orders-pipeline').addEventListener('click', function(e) {
     var docBtn = e.target.closest('.pipe-card__doc[data-doc]');
     if (!docBtn) return;
     e.preventDefault();
+    e.stopPropagation();
     var orderId = docBtn.dataset.order;
     var docType = docBtn.dataset.doc;
     var order = orders.find(function(o) { return o.id === orderId; });
     if (!order || !order.docs[docType]) return;
 
-    // Open the file — on local machine this would be a file:// URL
-    // On deployed site, show the path for now
-    var path = order.docs[docType];
-    alert('Document path:\n\n/Projects/🔥 tango' + path + '\n\nOpen this file on your local machine.');
+    var fullPath = '/Projects/🔥 tango' + order.docs[docType];
+
+    // Copy path to clipboard and show toast
+    navigator.clipboard.writeText(fullPath).then(function() {
+      showToast('📋 Copied: ' + fullPath.split('/').pop());
+    }).catch(function() {
+      // Fallback: prompt so user can copy
+      prompt('Document path:', fullPath);
+    });
   });
 
   // ── Touch support for mobile drag ──────────────────────────
