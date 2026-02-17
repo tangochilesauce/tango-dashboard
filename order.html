@@ -476,21 +476,13 @@
 </head>
 <body>
 
-<!-- NAV -->
-<div class="nav">
-  <div class="nav-inner">
-    <a href="index.html" class="nav-logo"><img src="! LOGO.png" alt="Tango Chile Sauce"></a>
-    <div class="nav-links">
-      <a href="tango-collection.html" data-content="Shop">Shop</a>
-      <a href="#" data-content="Our Story">Our Story</a>
-      <a href="#" data-content="Recipes">Recipes</a>
-      <a href="#" data-content="Find Us">Find Us</a>
-    </div>
-    <a href="#" class="nav-cart" data-content="Cart (0)">Cart (0)</a>
-  </div>
+<!-- DASHBOARD HEADER -->
+<div style="max-width:800px;margin:0 auto;padding:24px 24px 0;display:flex;align-items:center;gap:16px;">
+  <a href="index.html"><img src="! LOGO.png" alt="Tango" style="height:40px;"></a>
+  <span style="font-family:var(--font-body);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);">Order Detail</span>
 </div>
 
-<div class="order-page" style="padding-top:80px;">
+<div class="order-page" style="padding-top:24px;">
 
   <a href="index.html" class="back-link">&larr; Back to Dashboard</a>
 
@@ -527,10 +519,21 @@
 </div>
 
 <!-- ============================================================ -->
-<!-- ORDER DETAIL — JavaScript                                     -->
+<!-- Supabase CDN                                                  -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- ============================================================ -->
+<!-- ORDER DETAIL — JavaScript (Supabase-backed)                   -->
 <!-- ============================================================ -->
 <script>
 (function() {
+  // ── Supabase config ───────────────────────────────────────
+  var SUPA_URL = 'https://muowpjabnjkqgwgzfmoj.supabase.co';
+  var SUPA_KEY = 'sb_publishable_e-Kx6L_hOKZaG1toGiKidw__weM4n7n';
+  var sb = null;
+  try { sb = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) { console.warn('Supabase unavailable:', e); }
+
   var STORAGE_KEY = 'tango-orders';
 
   // ── Get order ID from URL ────────────────────────────────────
@@ -542,31 +545,94 @@
     return;
   }
 
-  // ── Load orders from localStorage ────────────────────────────
-  function load() {
+  // ── DB helpers ────────────────────────────────────────────────
+  function rowToOrder(row) {
+    return {
+      id: row.id,
+      channel: row.channel,
+      title: row.title,
+      value: row.value,
+      date: row.date_str,
+      stage: row.stage,
+      shipTo: row.ship_to,
+      notes: row.notes,
+      items: row.items || [],
+      checklist: row.checklist || [],
+      docs: row.docs || {}
+    };
+  }
+
+  function orderToRow(order) {
+    return {
+      id: order.id,
+      channel: order.channel,
+      title: order.title,
+      value: order.value,
+      date_str: order.date || order.date_str,
+      stage: order.stage,
+      ship_to: order.shipTo || order.ship_to,
+      notes: order.notes,
+      items: order.items || [],
+      checklist: order.checklist || [],
+      docs: order.docs || {},
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // ── State ─────────────────────────────────────────────────────
+  var order = null;
+
+  // ── Save order to Supabase + localStorage ─────────────────────
+  function saveOrder() {
+    // Update localStorage cache
     try {
-      var raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch(e) { return null; }
-  }
-  function save(orders) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
-  }
-
-  var orders = load();
-  if (!orders) {
-    document.getElementById('order-header').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted);">No orders found. <a href="index.html">Back to dashboard</a></p>';
-    return;
-  }
-
-  var order = orders.find(function(o) { return o.id === orderId; });
-  if (!order) {
-    document.getElementById('order-header').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted);">Order not found: ' + orderId + '. <a href="index.html">Back to dashboard</a></p>';
-    return;
+      var cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      var idx = cached.findIndex(function(o) { return o.id === order.id; });
+      if (idx >= 0) cached[idx] = order;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cached));
+    } catch(e) {}
+    // Persist to Supabase
+    if (sb) {
+      sb.from('tango_orders').upsert(orderToRow(order)).then(function(res) {
+        if (res.error) console.warn('Supabase save error:', res.error);
+      });
+    }
   }
 
-  // ── Set page title ───────────────────────────────────────────
-  document.title = order.title + ' — ' + order.channel + ' — Tango';
+  // ── Load order ────────────────────────────────────────────────
+  async function loadOrder() {
+    // Try Supabase first
+    if (sb) {
+      try {
+        var res = await sb.from('tango_orders').select('*').eq('id', orderId).single();
+        if (res.data) {
+          order = rowToOrder(res.data);
+          boot();
+          return;
+        }
+      } catch(e) {
+        console.warn('Supabase load failed, using cache:', e);
+      }
+    }
+    // Fallback to localStorage
+    try {
+      var cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      order = cached.find(function(o) { return o.id === orderId; }) || null;
+    } catch(e) {
+      order = null;
+    }
+    if (!order) {
+      document.getElementById('order-header').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted);">Order not found: ' + orderId + '. <a href="index.html">Back to dashboard</a></p>';
+      return;
+    }
+    boot();
+  }
+
+  function boot() {
+    document.title = order.title + ' \u2014 ' + order.channel + ' \u2014 Tango';
+    renderAll();
+    attachEvents();
+  }
 
   // ── Render header ────────────────────────────────────────────
   function renderHeader() {
@@ -585,34 +651,21 @@
       });
     }
 
-    var totalCases = 0;
-    var totalPacked = 0;
+    var totalCases = 0, totalPacked = 0;
     if (order.items) {
-      order.items.forEach(function(item) {
-        totalCases += item.cases;
-        totalPacked += item.packed || 0;
-      });
+      order.items.forEach(function(item) { totalCases += item.cases; totalPacked += item.packed || 0; });
     }
 
     document.getElementById('order-header').innerHTML =
-      '<div class="order-header__channel">' + order.channel + '</div>' +
+      '<div class="order-header__channel">' + (order.channel || '') + '</div>' +
       '<div class="order-header__top">' +
-        '<h1 class="order-header__title">' + order.title + '</h1>' +
+        '<h1 class="order-header__title">' + (order.title || '') + '</h1>' +
         '<span class="stage-pill ' + stageClass + '">' + stageLabel + '</span>' +
       '</div>' +
       '<div class="order-header__meta">' +
-        '<div class="order-header__meta-item">' +
-          '<span class="order-header__meta-label">Value</span>' +
-          order.value +
-        '</div>' +
-        '<div class="order-header__meta-item">' +
-          '<span class="order-header__meta-label">Pickup</span>' +
-          (order.date || 'TBD') +
-        '</div>' +
-        '<div class="order-header__meta-item">' +
-          '<span class="order-header__meta-label">Cases</span>' +
-          totalPacked + ' / ' + totalCases +
-        '</div>' +
+        '<div class="order-header__meta-item"><span class="order-header__meta-label">Value</span>' + (order.value || '') + '</div>' +
+        '<div class="order-header__meta-item"><span class="order-header__meta-label">Pickup</span>' + (order.date || 'TBD') + '</div>' +
+        '<div class="order-header__meta-item"><span class="order-header__meta-label">Cases</span>' + totalPacked + ' / ' + totalCases + '</div>' +
       '</div>' +
       (order.shipTo ? '<div class="order-header__ship-to">Ship to: ' + order.shipTo + '</div>' : '') +
       (docsHTML ? '<div class="order-header__docs">' + docsHTML + '</div>' : '') +
@@ -621,13 +674,9 @@
 
   // ── Render progress bar ──────────────────────────────────────
   function renderProgress() {
-    var totalCases = 0;
-    var totalPacked = 0;
+    var totalCases = 0, totalPacked = 0;
     if (order.items) {
-      order.items.forEach(function(item) {
-        totalCases += item.cases;
-        totalPacked += item.packed || 0;
-      });
+      order.items.forEach(function(item) { totalCases += item.cases; totalPacked += item.packed || 0; });
     }
     var pct = totalCases > 0 ? Math.round((totalPacked / totalCases) * 100) : 0;
     var fillColor = pct === 100 ? 'var(--green)' : pct > 50 ? 'var(--yellow)' : 'var(--orange)';
@@ -648,149 +697,100 @@
       document.getElementById('items-table').innerHTML = '<tr><td style="padding:20px;color:var(--muted);">No line items</td></tr>';
       return;
     }
-
     var totalCases = 0, totalPacked = 0, totalValue = 0;
-
     var rows = order.items.map(function(item, i) {
       var remaining = item.cases - (item.packed || 0);
       var isDone = remaining <= 0;
-      totalCases += item.cases;
-      totalPacked += item.packed || 0;
-      totalValue += item.cases * item.price;
-
+      totalCases += item.cases; totalPacked += item.packed || 0; totalValue += item.cases * item.price;
       return '<tr class="' + (isDone ? 'row-done' : '') + '">' +
         '<td class="col-flavor">' + item.flavor + '</td>' +
         '<td class="col-num">' + item.sku + '</td>' +
         '<td class="col-num">' + item.cases + '</td>' +
         '<td class="col-packed"><input type="number" class="packed-input" data-index="' + i + '" value="' + (item.packed || 0) + '" min="0" max="' + item.cases + '"></td>' +
         '<td class="col-remaining col-right">' + remaining + '</td>' +
-        '<td class="col-num col-right">$' + (item.cases * item.price).toLocaleString() + '</td>' +
-      '</tr>';
+        '<td class="col-num col-right">$' + (item.cases * item.price).toLocaleString() + '</td></tr>';
     }).join('');
-
     document.getElementById('items-table').innerHTML =
-      '<thead><tr>' +
-        '<th>Flavor</th>' +
-        '<th>Sku</th>' +
-        '<th>Cases</th>' +
-        '<th>Packed</th>' +
-        '<th class="col-right">Remaining</th>' +
-        '<th class="col-right">Value</th>' +
-      '</tr></thead>' +
+      '<thead><tr><th>Flavor</th><th>Sku</th><th>Cases</th><th>Packed</th><th class="col-right">Remaining</th><th class="col-right">Value</th></tr></thead>' +
       '<tbody>' + rows + '</tbody>' +
-      '<tfoot><tr>' +
-        '<td colspan="2">Total</td>' +
-        '<td>' + totalCases + '</td>' +
-        '<td>' + totalPacked + '</td>' +
-        '<td class="col-right">' + (totalCases - totalPacked) + '</td>' +
-        '<td class="col-right">$' + totalValue.toLocaleString() + '</td>' +
-      '</tr></tfoot>';
+      '<tfoot><tr><td colspan="2">Total</td><td>' + totalCases + '</td><td>' + totalPacked + '</td><td class="col-right">' + (totalCases - totalPacked) + '</td><td class="col-right">$' + totalValue.toLocaleString() + '</td></tr></tfoot>';
   }
 
   // ── Render checklist ─────────────────────────────────────────
   function renderChecklist() {
     var container = document.getElementById('checklist-section');
-    if (!order.checklist || !order.checklist.length) {
-      container.innerHTML = '';
-      return;
-    }
-
-    // Group by when
+    if (!order.checklist || !order.checklist.length) { container.innerHTML = ''; return; }
     var groups = {};
-    order.checklist.forEach(function(item) {
-      var key = item.when || 'other';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(item);
-    });
-
+    order.checklist.forEach(function(item) { var key = item.when || 'other'; if (!groups[key]) groups[key] = []; groups[key].push(item); });
     var groupOrder = ['today', 'tomorrow', 'other'];
     var groupLabels = { today: 'Today (at home)', tomorrow: 'Tomorrow (at kitchen)', other: 'Other' };
-
     var html = '<div class="section-header"><h2 class="section-header__title">Packing Checklist</h2></div>';
-
     groupOrder.forEach(function(key) {
       if (!groups[key]) return;
       var doneCount = groups[key].filter(function(c) { return c.done; }).length;
-
-      html += '<div class="card" style="margin-bottom:16px;">';
-      html += '<div class="checklist-group-label">' + groupLabels[key] +
-        '<span class="checklist-group-label__count">' + doneCount + '/' + groups[key].length + '</span></div>';
-
+      html += '<div class="card" style="margin-bottom:16px;"><div class="checklist-group-label">' + groupLabels[key] + '<span class="checklist-group-label__count">' + doneCount + '/' + groups[key].length + '</span></div>';
       groups[key].forEach(function(item) {
-        html += '<div class="checklist-item' + (item.done ? ' is-done' : '') + '" data-check-id="' + item.id + '">' +
-          '<div class="checklist-item__check"></div>' +
-          '<span class="checklist-item__text">' + item.text + '</span>' +
-        '</div>';
+        html += '<div class="checklist-item' + (item.done ? ' is-done' : '') + '" data-check-id="' + item.id + '"><div class="checklist-item__check"></div><span class="checklist-item__text">' + item.text + '</span></div>';
       });
-
       html += '</div>';
     });
-
     container.innerHTML = html;
   }
 
-  // ── Render everything ────────────────────────────────────────
-  function renderAll() {
-    renderHeader();
-    renderProgress();
-    renderItems();
-    renderChecklist();
+  function renderAll() { renderHeader(); renderProgress(); renderItems(); renderChecklist(); }
+
+  // ── Events (attached once after load) ─────────────────────────
+  var eventsAttached = false;
+  function attachEvents() {
+    if (eventsAttached) return;
+    eventsAttached = true;
+
+    document.getElementById('items-table').addEventListener('change', function(e) {
+      var input = e.target.closest('.packed-input');
+      if (!input) return;
+      var idx = parseInt(input.dataset.index);
+      var val = parseInt(input.value) || 0;
+      val = Math.max(0, Math.min(val, order.items[idx].cases));
+      order.items[idx].packed = val;
+      input.value = val;
+      saveOrder();
+      renderAll();
+    });
+
+    document.getElementById('checklist-section').addEventListener('click', function(e) {
+      var item = e.target.closest('.checklist-item');
+      if (!item) return;
+      var checkId = item.dataset.checkId;
+      var checkItem = order.checklist.find(function(c) { return c.id === checkId; });
+      if (!checkItem) return;
+      checkItem.done = !checkItem.done;
+      saveOrder();
+      renderAll();
+    });
+
+    document.getElementById('order-header').addEventListener('click', function(e) {
+      var btn = e.target.closest('.doc-btn[data-doc]');
+      if (!btn) return;
+      var docType = btn.dataset.doc;
+      if (!order.docs || !order.docs[docType]) return;
+      var fullPath = '/Projects/\uD83D\uDD25 tango' + order.docs[docType];
+      navigator.clipboard.writeText(fullPath).then(function() {
+        showToast('\uD83D\uDCCB Copied: ' + fullPath.split('/').pop());
+      }).catch(function() { prompt('Document path:', fullPath); });
+    });
   }
 
-  renderAll();
-
-  // ── Event: packed count change ───────────────────────────────
-  document.getElementById('items-table').addEventListener('change', function(e) {
-    var input = e.target.closest('.packed-input');
-    if (!input) return;
-    var idx = parseInt(input.dataset.index);
-    var val = parseInt(input.value) || 0;
-    val = Math.max(0, Math.min(val, order.items[idx].cases));
-    order.items[idx].packed = val;
-    input.value = val;
-    save(orders);
-    renderAll();
-  });
-
-  // ── Event: checklist toggle ──────────────────────────────────
-  document.getElementById('checklist-section').addEventListener('click', function(e) {
-    var item = e.target.closest('.checklist-item');
-    if (!item) return;
-    var checkId = item.dataset.checkId;
-    var checkItem = order.checklist.find(function(c) { return c.id === checkId; });
-    if (!checkItem) return;
-    checkItem.done = !checkItem.done;
-    save(orders);
-    renderAll();
-  });
-
-  // ── Event: doc buttons ───────────────────────────────────────
-  document.getElementById('order-header').addEventListener('click', function(e) {
-    var btn = e.target.closest('.doc-btn[data-doc]');
-    if (!btn) return;
-    var docType = btn.dataset.doc;
-    if (!order.docs || !order.docs[docType]) return;
-    var fullPath = '/Projects/\uD83D\uDD25 tango' + order.docs[docType];
-    navigator.clipboard.writeText(fullPath).then(function() {
-      showToast('\uD83D\uDCCB Copied: ' + fullPath.split('/').pop());
-    }).catch(function() {
-      prompt('Document path:', fullPath);
-    });
-  });
-
-  // ── Toast ────────────────────────────────────────────────────
   function showToast(msg) {
     var toast = document.createElement('div');
     toast.textContent = msg;
     toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:12px;font-size:13px;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.4);opacity:0;transition:opacity .2s';
     document.body.appendChild(toast);
     requestAnimationFrame(function() { toast.style.opacity = '1'; });
-    setTimeout(function() {
-      toast.style.opacity = '0';
-      setTimeout(function() { toast.remove(); }, 300);
-    }, 2500);
+    setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 300); }, 2500);
   }
 
+  // ── Boot ──────────────────────────────────────────────────────
+  loadOrder();
 })();
 </script>
 

@@ -834,23 +834,14 @@
 </head>
 <body>
 
-<!-- NAV -->
-<div class="nav">
-  <div class="nav-inner">
-    <a href="tango-collection.html" class="nav-logo"><img src="! LOGO.png" alt="Tango Chile Sauce"></a>
-    <div class="nav-links">
-      <a href="tango-collection.html" data-content="Shop">Shop</a>
-      <a href="#" data-content="Our Story">Our Story</a>
-      <a href="#" data-content="Recipes">Recipes</a>
-      <a href="#" data-content="Find Us">Find Us</a>
-    </div>
-    <a href="#" class="nav-cart" data-content="🛒 Cart (0)">🛒 Cart (0)</a>
-  </div>
+<!-- DASHBOARD HEADER -->
+<div style="max-width:var(--max-width);margin:0 auto;padding:24px 24px 0;display:flex;align-items:center;gap:16px;">
+  <img src="! LOGO.png" alt="Tango" style="height:40px;">
+  <span style="font-family:var(--font-body);font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);">Production Dashboard</span>
 </div>
 
-
 <!-- DASHBOARD CONTENT -->
-<div class="dashboard" style="padding-top:80px;">
+<div class="dashboard" style="padding-top:24px;">
 
   <!-- ============================================================ -->
   <!-- STAT CARDS — Production Overview                              -->
@@ -1812,77 +1803,35 @@
 </div>
 
 
-<!-- FOOTER -->
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-email-section">
-      <p>Join the Tango fam. Get recipes, drops, and heat delivered to your inbox.</p>
-      <div class="footer-email-input">
-        <input type="email" placeholder="Your Email">
-        <button class="footer-email-submit">&rarr;</button>
-      </div>
-    </div>
-    <div class="footer-cols">
-      <div class="footer-col">
-        <div class="footer-col-title">Shop</div>
-        <ul>
-          <li><a href="#" data-content="Hot">Hot</a></li>
-          <li><a href="#" data-content="Mild">Mild</a></li>
-          <li><a href="#" data-content="Truffle">Truffle</a></li>
-          <li><a href="#" data-content="Mango">Mango</a></li>
-          <li><a href="#" data-content="Thai">Thai</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Company</div>
-        <ul>
-          <li><a href="#" data-content="Our Story">Our Story</a></li>
-          <li><a href="#" data-content="Recipes">Recipes</a></li>
-          <li><a href="#" data-content="Find Us">Find Us</a></li>
-          <li><a href="#" data-content="Wholesale">Wholesale</a></li>
-          <li><a href="#" data-content="Contact">Contact</a></li>
-          <li><a href="#" data-content="FAQs">FAQs</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Social</div>
-        <ul>
-          <li><a href="#" data-content="Instagram">Instagram</a></li>
-          <li><a href="#" data-content="TikTok">TikTok</a></li>
-          <li><a href="#" data-content="Facebook">Facebook</a></li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <div>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
-    </div>
-    <div>&copy; Tango Chile Sauce 2026</div>
-  </div>
-  <div class="footer-real-sauce-wrapper">
-    <div class="footer-real-sauce">Real Sauce</div>
-  </div>
-</footer>
 
 <!-- ============================================================ -->
-<!-- 📦 ORDERS PIPELINE — JavaScript                             -->
+<!-- Supabase CDN                                                  -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- ============================================================ -->
+<!-- 📦 ORDERS PIPELINE — JavaScript (Supabase-backed)             -->
 <!-- ============================================================ -->
 <script>
 (function() {
-  const STORAGE_KEY = 'tango-orders';
+  // ── Supabase config ───────────────────────────────────────
+  var SUPA_URL = 'https://muowpjabnjkqgwgzfmoj.supabase.co';
+  var SUPA_KEY = 'sb_publishable_e-Kx6L_hOKZaG1toGiKidw__weM4n7n';
+  var sb = null;
+  try { sb = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) { console.warn('Supabase unavailable:', e); }
 
-  // ── Default orders (seeded on first load) ──────────────────
-  const DEFAULT_ORDERS = [
+  var STORAGE_KEY = 'tango-orders';
+
+  // ── Default orders (seed data) ────────────────────────────
+  var DEFAULT_ORDERS = [
     {
       id: 'exp-12165',
       channel: 'EXP Corp',
       title: 'PO #12165',
       value: '$3,750',
-      date: 'Pickup: Feb 19',
+      date_str: 'Pickup: Feb 19',
       stage: 'processing',
-      shipTo: 'EXP Warehouse, 28-13 119th St, College Point, NY 11354',
+      ship_to: 'EXP Warehouse, 28-13 119th St, College Point, NY 11354',
       notes: 'Corrected: Mango $25/case (was $5 typo on PO). Added 20 Sriracha (not on original PO). Mild bottles need cap swap (wrong color caps).',
       items: [
         { sku: 'TH01', flavor: 'Truffle',  cases: 10, price: 50, packed: 0 },
@@ -1892,13 +1841,13 @@
         { sku: 'TH05', flavor: 'Sriracha', cases: 20, price: 25, packed: 0 }
       ],
       checklist: [
-        { id: 'c1',  text: 'Swap Mild caps (garage — wrong color)', done: false, when: 'today' },
+        { id: 'c1',  text: 'Swap Mild caps (garage \u2014 wrong color)', done: false, when: 'today' },
         { id: 'c2',  text: 'Haul bottles upstairs (all flavors except Sriracha shortage)', done: false, when: 'today' },
         { id: 'c3',  text: 'Tape bottoms on all 48 boxes', done: false, when: 'today' },
         { id: 'c4',  text: 'Fill + tape + sticker: 30 Mango cases', done: false, when: 'today' },
         { id: 'c5',  text: 'Fill + tape + sticker: 10 Truffle cases', done: false, when: 'today' },
         { id: 'c6',  text: 'Fill + tape + sticker: 8 Sriracha cases (48 bottles = all we have)', done: false, when: 'today' },
-        { id: 'c7',  text: 'Get more boxes (need 92 more) — order or pick up', done: false, when: 'today' },
+        { id: 'c7',  text: 'Get more boxes (need 92 more) \u2014 order or pick up', done: false, when: 'today' },
         { id: 'c8',  text: 'Pack 50 Hot cases (40 new + 10 already done at kitchen)', done: false, when: 'tomorrow' },
         { id: 'c9',  text: 'Pack 30 Mild cases', done: false, when: 'tomorrow' },
         { id: 'c10', text: 'Pack remaining 12 Sriracha cases (need 72 more bottles)', done: false, when: 'tomorrow' },
@@ -1917,7 +1866,7 @@
       channel: 'UNFI Moreno Valley',
       title: 'PO #044849783',
       value: '$3,422',
-      date: 'Pickup: Feb 9',
+      date_str: 'Pickup: Feb 9',
       stage: 'shipped',
       docs: {
         po:  '/distribution/unfi/purchase-orders/po-044849783/PO044849783.html',
@@ -1930,7 +1879,7 @@
       channel: 'UNFI Hudson Valley',
       title: 'PO #1052998',
       value: '$3,422',
-      date: 'Pickup: Feb 25',
+      date_str: 'Pickup: Feb 25',
       stage: 'processing',
       docs: {
         po:  '/distribution/unfi/purchase-orders/po-1052998/PO1052998.pdf',
@@ -1940,61 +1889,108 @@
     }
   ];
 
-  // ── Load / Save ────────────────────────────────────────────
-  function load() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch(e) { return null; }
-  }
-  function save(orders) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+  // ── DB helpers ────────────────────────────────────────────
+  // Convert DB row (snake_case) → app object (camelCase-ish for display)
+  function rowToOrder(row) {
+    return {
+      id: row.id,
+      channel: row.channel,
+      title: row.title,
+      value: row.value,
+      date: row.date_str,
+      stage: row.stage,
+      shipTo: row.ship_to,
+      notes: row.notes,
+      items: row.items || [],
+      checklist: row.checklist || [],
+      docs: row.docs || {}
+    };
   }
 
-  let orders = load();
-  if (!orders) {
-    orders = JSON.parse(JSON.stringify(DEFAULT_ORDERS));
-    save(orders);
-  } else {
-    // Merge new default fields (items, checklist, shipTo, notes) into existing stored orders
-    var updated = false;
-    DEFAULT_ORDERS.forEach(function(def) {
-      var stored = orders.find(function(o) { return o.id === def.id; });
-      if (stored) {
-        ['items', 'checklist', 'shipTo', 'notes'].forEach(function(key) {
-          if (def[key] && !stored[key]) {
-            stored[key] = JSON.parse(JSON.stringify(def[key]));
-            updated = true;
-          }
-        });
-        // Update value if changed in defaults
-        if (def.value !== stored.value && def.value) {
-          stored.value = def.value;
-          updated = true;
+  // Convert app object → DB row
+  function orderToRow(order) {
+    return {
+      id: order.id,
+      channel: order.channel,
+      title: order.title,
+      value: order.value,
+      date_str: order.date || order.date_str,
+      stage: order.stage,
+      ship_to: order.shipTo || order.ship_to,
+      notes: order.notes,
+      items: order.items || [],
+      checklist: order.checklist || [],
+      docs: order.docs || {},
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  // ── Load from Supabase (with localStorage cache) ──────────
+  var orders = [];
+
+  async function loadOrders() {
+    // Try Supabase first
+    if (sb) {
+      try {
+        var res = await sb.from('tango_orders').select('*').order('created_at');
+        if (res.data && res.data.length > 0) {
+          orders = res.data.map(rowToOrder);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+          render();
+          return;
         }
+        // Table empty — seed it
+        var rows = DEFAULT_ORDERS.map(orderToRow);
+        await sb.from('tango_orders').upsert(rows);
+        orders = DEFAULT_ORDERS.map(function(d) { return rowToOrder(orderToRow(d)); });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+        render();
+        return;
+      } catch(e) {
+        console.warn('Supabase load failed, using cache:', e);
       }
-    });
-    if (updated) save(orders);
+    }
+    // Fallback to localStorage
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      orders = raw ? JSON.parse(raw) : DEFAULT_ORDERS.map(function(d) { return rowToOrder(orderToRow(d)); });
+    } catch(e) {
+      orders = DEFAULT_ORDERS.map(function(d) { return rowToOrder(orderToRow(d)); });
+    }
+    render();
+  }
+
+  // ── Save single order ─────────────────────────────────────
+  function saveOrder(order) {
+    // Update localStorage cache
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+    // Persist to Supabase (fire and forget)
+    if (sb) {
+      sb.from('tango_orders').upsert(orderToRow(order)).then(function(res) {
+        if (res.error) console.warn('Supabase save error:', res.error);
+      });
+    }
   }
 
   // ── Render ─────────────────────────────────────────────────
   function render() {
-    const drops = document.querySelectorAll('.pipeline-col__drop');
-    drops.forEach(d => { d.innerHTML = ''; });
+    var drops = document.querySelectorAll('.pipeline-col__drop');
+    drops.forEach(function(d) { d.innerHTML = ''; });
 
-    const stages = { new: 0, processing: 0, shipped: 0, paid: 0 };
+    var stages = { new: 0, processing: 0, shipped: 0, paid: 0 };
 
     orders.forEach(function(order) {
       stages[order.stage] = (stages[order.stage] || 0) + 1;
 
-      const card = document.createElement('div');
+      var card = document.createElement('div');
       card.className = 'pipe-card';
       card.draggable = true;
       card.dataset.id = order.id;
 
-      const docsHTML = ['po','bol','inv'].map(function(type) {
-        const label = type === 'po' ? 'PO' : type === 'bol' ? 'BOL' : 'Invoice';
-        if (order.docs[type]) {
+      var docsObj = order.docs || {};
+      var docsHTML = ['po','bol','inv'].map(function(type) {
+        var label = type === 'po' ? 'PO' : type === 'bol' ? 'BOL' : 'Invoice';
+        if (docsObj[type]) {
           return '<a class="pipe-card__doc" href="javascript:void(0)" data-doc="' + type + '" data-order="' + order.id + '" title="Export ' + label + '">' + label + '</a>';
         } else {
           return '<span class="pipe-card__doc pipe-card__doc--missing" title="No ' + label + ' yet">' + label + '</span>';
@@ -2002,10 +1998,10 @@
       }).join('');
 
       card.innerHTML =
-        '<div class="pipe-card__channel">' + order.channel + '</div>' +
-        '<div class="pipe-card__title">' + order.title + '</div>' +
-        '<div class="pipe-card__value">' + order.value + '</div>' +
-        '<div class="pipe-card__date">' + order.date + '</div>' +
+        '<div class="pipe-card__channel">' + (order.channel || '') + '</div>' +
+        '<div class="pipe-card__title">' + (order.title || '') + '</div>' +
+        '<div class="pipe-card__value">' + (order.value || '') + '</div>' +
+        '<div class="pipe-card__date">' + (order.date || '') + '</div>' +
         '<div class="pipe-card__docs">' + docsHTML + '</div>';
 
       var drop = document.querySelector('[data-drop="' + order.stage + '"]');
@@ -2055,7 +2051,7 @@
       var order = orders.find(function(o) { return o.id === dragId; });
       if (order && order.stage !== newStage) {
         order.stage = newStage;
-        save(orders);
+        saveOrder(order);
         render();
       }
     });
@@ -2084,13 +2080,11 @@
     var order = orders.find(function(o) { return o.id === orderId; });
     if (!order || !order.docs[docType]) return;
 
-    var fullPath = '/Projects/🔥 tango' + order.docs[docType];
+    var fullPath = '/Projects/\uD83D\uDD25 tango' + order.docs[docType];
 
-    // Copy path to clipboard and show toast
     navigator.clipboard.writeText(fullPath).then(function() {
-      showToast('📋 Copied: ' + fullPath.split('/').pop());
+      showToast('\uD83D\uDCCB Copied: ' + fullPath.split('/').pop());
     }).catch(function() {
-      // Fallback: prompt so user can copy
       prompt('Document path:', fullPath);
     });
   });
@@ -2102,9 +2096,7 @@
     clickStartY = e.clientY;
   });
   document.getElementById('orders-pipeline').addEventListener('click', function(e) {
-    // Skip if it was a drag (moved more than 5px)
     if (Math.abs(e.clientX - clickStartX) > 5 || Math.abs(e.clientY - clickStartY) > 5) return;
-    // Skip if clicking a doc button
     if (e.target.closest('.pipe-card__doc')) return;
     var card = e.target.closest('.pipe-card');
     if (!card) return;
@@ -2145,7 +2137,6 @@
     touchClone.style.left = x + 'px';
     touchClone.style.top = y + 'px';
 
-    // Highlight drop target
     document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
     var el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
     if (el) {
@@ -2158,7 +2149,6 @@
     if (!touchClone) return;
     document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
 
-    // Find drop target from last touch position
     var touch = e.changedTouches[0];
     touchClone.style.display = 'none';
     var el = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -2170,7 +2160,7 @@
         var order = orders.find(function(o) { return o.id === dragId; });
         if (order && order.stage !== newStage) {
           order.stage = newStage;
-          save(orders);
+          saveOrder(order);
         }
       }
     }
@@ -2183,8 +2173,8 @@
     render();
   });
 
-  // ── Initial render ─────────────────────────────────────────
-  render();
+  // ── Boot ──────────────────────────────────────────────────
+  loadOrders();
 })();
 </script>
 
@@ -2193,7 +2183,6 @@
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(function(reg) {
-    // Check for updates every time the page loads
     reg.update();
   });
 }
