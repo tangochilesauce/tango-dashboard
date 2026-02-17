@@ -1,8 +1,10 @@
 // Tango Dashboard — Service Worker
 // Bump CACHE_VERSION to force update on all clients
-const CACHE_VERSION = 'tango-v1';
+const CACHE_VERSION = 'tango-v2';
 const ASSETS = [
   './',
+  './index.html',
+  './order.html',
   './tango-dashboard.html',
   './tango-system.css',
   './! LOGO.png',
@@ -38,19 +40,23 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — cache-first for speed, fall back to network
+// Fetch — cache-first for local assets, network-only for external (CDN, APIs)
 self.addEventListener('fetch', (event) => {
+  // Don't cache external requests (Supabase API, CDN scripts, etc.)
+  if (!event.request.url.startsWith(self.location.origin)) {
+    return; // Let the browser handle it normally
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) {
         // Serve cached version instantly, but also fetch fresh copy in background
-        const networkFetch = fetch(event.request)
+        fetch(event.request)
           .then((response) => {
             if (response && response.ok) {
               const clone = response.clone();
               caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, clone));
             }
-            return response;
           })
           .catch(() => {}); // Ignore network errors (we have the cache)
         return cached;

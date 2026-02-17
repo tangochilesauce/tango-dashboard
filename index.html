@@ -2174,6 +2174,15 @@
   });
 
   // ── Boot ──────────────────────────────────────────────────
+  // Render cached/defaults immediately so page is never blank
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    orders = raw ? JSON.parse(raw) : DEFAULT_ORDERS.map(function(d) { return rowToOrder(orderToRow(d)); });
+  } catch(e) {
+    orders = DEFAULT_ORDERS.map(function(d) { return rowToOrder(orderToRow(d)); });
+  }
+  render();
+  // Then sync from Supabase in background
   loadOrders();
 })();
 </script>

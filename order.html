@@ -790,6 +790,13 @@
   }
 
   // ── Boot ──────────────────────────────────────────────────────
+  // Render from cache immediately so page is never blank
+  try {
+    var cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    order = cached.find(function(o) { return o.id === orderId; }) || null;
+    if (order) boot();
+  } catch(e) {}
+  // Then sync from Supabase in background
   loadOrder();
 })();
 </script>
