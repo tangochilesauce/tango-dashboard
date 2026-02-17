@@ -415,7 +415,7 @@
 
 
 /* ============================================================ */
-/* ORDER CARDS                                                   */
+/* ORDER CARDS (legacy)                                          */
 /* ============================================================ */
 .order-card {
   background: var(--bg);
@@ -470,6 +470,161 @@
   font-style: italic;
   color: var(--muted);
   margin-bottom: 12px;
+}
+
+/* ============================================================ */
+/* 📦 ORDERS PIPELINE — Drag & Drop Kanban                      */
+/* ============================================================ */
+.orders-pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+@media (max-width: 900px) {
+  .orders-pipeline {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .orders-pipeline {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pipeline-col {
+  min-height: 120px;
+}
+.pipeline-col__header {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pipeline-col__count {
+  font-variant-numeric: tabular-nums;
+  background: rgba(0,0,0,0.06);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 10px;
+}
+.pipeline-col__drop {
+  min-height: 80px;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+.pipeline-col__drop.drag-over {
+  background: rgba(255,149,0,0.08);
+  outline: 2px dashed var(--orange);
+  outline-offset: -2px;
+}
+
+/* Pipeline order card */
+.pipe-card {
+  background: var(--bg);
+  border-radius: 14px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: grab;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.08);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.pipe-card:active {
+  cursor: grabbing;
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.20);
+}
+.pipe-card.dragging {
+  opacity: 0.4;
+}
+.pipe-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.2;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  border-radius: 14px;
+}
+.pipe-card > * {
+  position: relative;
+  z-index: 1;
+}
+.pipe-card__channel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.pipe-card__title {
+  font-family: var(--font-headline);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.pipe-card__value {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.pipe-card__date {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.pipe-card__docs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.pipe-card__doc {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--text);
+  color: var(--text);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+}
+.pipe-card__doc:hover {
+  background: var(--text);
+  color: var(--bg);
+}
+.pipe-card__doc--missing {
+  border-color: rgba(0,0,0,0.15);
+  color: var(--muted);
+  border-style: dashed;
+}
+.pipe-card__doc--missing:hover {
+  background: rgba(0,0,0,0.04);
+  color: var(--muted);
 }
 
 /* Process flow */
@@ -733,63 +888,42 @@
 
 
   <!-- ============================================================ -->
-  <!-- 📦 CURRENT ORDERS                                             -->
+  <!-- 📦 ORDERS PIPELINE — Drag & Drop                             -->
   <!-- ============================================================ -->
   <div class="section-header">
-    <h2 class="section-header__title">📦 Current Orders</h2>
-    <span class="section-header__badge">Feb 2026</span>
+    <h2 class="section-header__title">📦 Orders Pipeline</h2>
+    <span class="section-header__badge">Drag to move</span>
   </div>
 
-  <!-- Order 1: EXP Corp -->
-  <div class="order-card">
-    <div class="order-card__header">
-      <span class="order-card__title">EXP Corp — PO #12165</span>
-      <span class="status-pill status-pill--orange">In Progress</span>
+  <div class="orders-pipeline" id="orders-pipeline">
+    <div class="pipeline-col" data-stage="new">
+      <div class="pipeline-col__header">
+        <span>New</span>
+        <span class="pipeline-col__count" data-count>0</span>
+      </div>
+      <div class="pipeline-col__drop" data-drop="new"></div>
     </div>
-    <p class="order-card__meta">NYC Bodegas &nbsp;|&nbsp; Pickup: TBD &nbsp;|&nbsp; Value: ~$2,650</p>
-    <p class="order-card__note">Hot + Mild ready. Mango + Truffle pack Wed. Sriracha needs cook.</p>
-    <table class="data-table data-table--compact">
-      <thead><tr><th>Product</th><th>Cases</th><th>Bottles</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#CC0000;"></span>Hot</td><td class="col-num">50</td><td class="col-num">300</td><td><span class="status-pill status-pill--green">Ready</span></td></tr>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#3BA226;"></span>Mild</td><td class="col-num">30</td><td class="col-num">180</td><td><span class="status-pill status-pill--green">Ready</span></td></tr>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#F5D623;"></span>Mango</td><td class="col-num">30</td><td class="col-num">180</td><td><span class="status-pill status-pill--yellow">Pack Wed</span></td></tr>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#1A1A1A;"></span>Truffle</td><td class="col-num">10</td><td class="col-num">60</td><td><span class="status-pill status-pill--yellow">Pack Wed</span></td></tr>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#2B6EC2;"></span>Sriracha</td><td class="col-num">20</td><td class="col-num">120</td><td><span class="status-pill status-pill--red">Need Cook</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Order 2: UNFI Moreno Valley -->
-  <div class="order-card">
-    <div class="order-card__header">
-      <span class="order-card__title">UNFI Moreno Valley — PO #044849783</span>
-      <span class="status-pill status-pill--green">Ready</span>
+    <div class="pipeline-col" data-stage="processing">
+      <div class="pipeline-col__header">
+        <span>Processing</span>
+        <span class="pipeline-col__count" data-count>0</span>
+      </div>
+      <div class="pipeline-col__drop" data-drop="processing"></div>
     </div>
-    <p class="order-card__meta">Pickup: Feb 9 &nbsp;|&nbsp; Value: $3,422 &nbsp;|&nbsp; Status: Palletized</p>
-    <table class="data-table data-table--compact">
-      <thead><tr><th>Product</th><th>Cases</th><th>Bottles</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#CC0000;"></span>Hot</td><td class="col-num">91</td><td class="col-num">546</td><td><span class="status-pill status-pill--green">Palletized</span></td></tr>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#3BA226;"></span>Mild</td><td class="col-num">27</td><td class="col-num">162</td><td><span class="status-pill status-pill--green">Palletized</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Order 3: UNFI Hudson Valley -->
-  <div class="order-card">
-    <div class="order-card__header">
-      <span class="order-card__title">UNFI Hudson Valley — PO #1052998</span>
-      <span class="status-pill status-pill--green">Ready</span>
+    <div class="pipeline-col" data-stage="shipped">
+      <div class="pipeline-col__header">
+        <span>Shipped</span>
+        <span class="pipeline-col__count" data-count>0</span>
+      </div>
+      <div class="pipeline-col__drop" data-drop="shipped"></div>
     </div>
-    <p class="order-card__meta">Pickup: Feb 25 &nbsp;|&nbsp; Value: $3,422 &nbsp;|&nbsp; Status: Palletized</p>
-    <table class="data-table data-table--compact">
-      <thead><tr><th>Product</th><th>Cases</th><th>Bottles</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#3BA226;"></span>Mild</td><td class="col-num">56</td><td class="col-num">336</td><td><span class="status-pill status-pill--green">Palletized</span></td></tr>
-        <tr><td class="col-name"><span class="flavor-dot" style="background:#CC0000;"></span>Hot</td><td class="col-num">62</td><td class="col-num">372</td><td><span class="status-pill status-pill--green">Palletized</span></td></tr>
-      </tbody>
-    </table>
+    <div class="pipeline-col" data-stage="paid">
+      <div class="pipeline-col__header">
+        <span>Paid</span>
+        <span class="pipeline-col__count" data-count>0</span>
+      </div>
+      <div class="pipeline-col__drop" data-drop="paid"></div>
+    </div>
   </div>
 
 
@@ -1731,6 +1865,248 @@
     <div class="footer-real-sauce">Real Sauce</div>
   </div>
 </footer>
+
+<!-- ============================================================ -->
+<!-- 📦 ORDERS PIPELINE — JavaScript                             -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  const STORAGE_KEY = 'tango-orders';
+
+  // ── Default orders (seeded on first load) ──────────────────
+  const DEFAULT_ORDERS = [
+    {
+      id: 'exp-12165',
+      channel: 'EXP Corp',
+      title: 'PO #12165',
+      value: '$2,650',
+      date: 'Pickup: TBD',
+      stage: 'processing',
+      docs: {
+        po:  '/distribution/exp/PO-12165/PO12165 TANGO.pdf',
+        bol: '/distribution/exp/PO-12165/BOL-12165.pdf',
+        inv: null
+      }
+    },
+    {
+      id: 'unfi-044849783',
+      channel: 'UNFI Moreno Valley',
+      title: 'PO #044849783',
+      value: '$3,422',
+      date: 'Pickup: Feb 9',
+      stage: 'shipped',
+      docs: {
+        po:  '/distribution/unfi/purchase-orders/po-044849783/PO044849783.html',
+        bol: '/distribution/unfi/purchase-orders/po-044849783/BOL-044849783.pdf',
+        inv: null
+      }
+    },
+    {
+      id: 'unfi-1052998',
+      channel: 'UNFI Hudson Valley',
+      title: 'PO #1052998',
+      value: '$3,422',
+      date: 'Pickup: Feb 25',
+      stage: 'processing',
+      docs: {
+        po:  '/distribution/unfi/purchase-orders/po-1052998/PO1052998.pdf',
+        bol: '/distribution/unfi/purchase-orders/po-1052998/BOL-1052998.pdf',
+        inv: '/business/UNFI_Invoice_203_PO1052998.md'
+      }
+    }
+  ];
+
+  // ── Load / Save ────────────────────────────────────────────
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e) { return null; }
+  }
+  function save(orders) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+  }
+
+  let orders = load() || JSON.parse(JSON.stringify(DEFAULT_ORDERS));
+  if (!load()) save(orders);
+
+  // ── Render ─────────────────────────────────────────────────
+  function render() {
+    const drops = document.querySelectorAll('.pipeline-col__drop');
+    drops.forEach(d => { d.innerHTML = ''; });
+
+    const stages = { new: 0, processing: 0, shipped: 0, paid: 0 };
+
+    orders.forEach(function(order) {
+      stages[order.stage] = (stages[order.stage] || 0) + 1;
+
+      const card = document.createElement('div');
+      card.className = 'pipe-card';
+      card.draggable = true;
+      card.dataset.id = order.id;
+
+      const docsHTML = ['po','bol','inv'].map(function(type) {
+        const label = type === 'po' ? 'PO' : type === 'bol' ? 'BOL' : 'Invoice';
+        if (order.docs[type]) {
+          return '<a class="pipe-card__doc" href="javascript:void(0)" data-doc="' + type + '" data-order="' + order.id + '" title="Export ' + label + '">' + label + '</a>';
+        } else {
+          return '<span class="pipe-card__doc pipe-card__doc--missing" title="No ' + label + ' yet">' + label + '</span>';
+        }
+      }).join('');
+
+      card.innerHTML =
+        '<div class="pipe-card__channel">' + order.channel + '</div>' +
+        '<div class="pipe-card__title">' + order.title + '</div>' +
+        '<div class="pipe-card__value">' + order.value + '</div>' +
+        '<div class="pipe-card__date">' + order.date + '</div>' +
+        '<div class="pipe-card__docs">' + docsHTML + '</div>';
+
+      var drop = document.querySelector('[data-drop="' + order.stage + '"]');
+      if (drop) drop.appendChild(card);
+    });
+
+    // Update counts
+    document.querySelectorAll('.pipeline-col').forEach(function(col) {
+      var stage = col.dataset.stage;
+      var countEl = col.querySelector('[data-count]');
+      if (countEl) countEl.textContent = stages[stage] || 0;
+    });
+  }
+
+  // ── Drag & Drop ────────────────────────────────────────────
+  var dragId = null;
+
+  document.getElementById('orders-pipeline').addEventListener('dragstart', function(e) {
+    var card = e.target.closest('.pipe-card');
+    if (!card) return;
+    dragId = card.dataset.id;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  document.getElementById('orders-pipeline').addEventListener('dragend', function(e) {
+    var card = e.target.closest('.pipe-card');
+    if (card) card.classList.remove('dragging');
+    document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+    dragId = null;
+  });
+
+  document.querySelectorAll('.pipeline-col__drop').forEach(function(drop) {
+    drop.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      drop.classList.add('drag-over');
+    });
+    drop.addEventListener('dragleave', function() {
+      drop.classList.remove('drag-over');
+    });
+    drop.addEventListener('drop', function(e) {
+      e.preventDefault();
+      drop.classList.remove('drag-over');
+      if (!dragId) return;
+      var newStage = drop.dataset.drop;
+      var order = orders.find(function(o) { return o.id === dragId; });
+      if (order && order.stage !== newStage) {
+        order.stage = newStage;
+        save(orders);
+        render();
+      }
+    });
+  });
+
+  // ── Document export (open file) ────────────────────────────
+  document.getElementById('orders-pipeline').addEventListener('click', function(e) {
+    var docBtn = e.target.closest('.pipe-card__doc[data-doc]');
+    if (!docBtn) return;
+    e.preventDefault();
+    var orderId = docBtn.dataset.order;
+    var docType = docBtn.dataset.doc;
+    var order = orders.find(function(o) { return o.id === orderId; });
+    if (!order || !order.docs[docType]) return;
+
+    // Open the file — on local machine this would be a file:// URL
+    // On deployed site, show the path for now
+    var path = order.docs[docType];
+    alert('Document path:\n\n/Projects/🔥 tango' + path + '\n\nOpen this file on your local machine.');
+  });
+
+  // ── Touch support for mobile drag ──────────────────────────
+  var touchCard = null;
+  var touchClone = null;
+  var touchStartX, touchStartY;
+
+  document.getElementById('orders-pipeline').addEventListener('touchstart', function(e) {
+    var card = e.target.closest('.pipe-card');
+    if (!card || e.target.closest('.pipe-card__doc')) return;
+    touchCard = card;
+    dragId = card.dataset.id;
+    var rect = card.getBoundingClientRect();
+    touchStartX = e.touches[0].clientX - rect.left;
+    touchStartY = e.touches[0].clientY - rect.top;
+
+    touchClone = card.cloneNode(true);
+    touchClone.style.position = 'fixed';
+    touchClone.style.width = rect.width + 'px';
+    touchClone.style.opacity = '0.85';
+    touchClone.style.zIndex = '9999';
+    touchClone.style.pointerEvents = 'none';
+    touchClone.style.transform = 'scale(1.04)';
+    touchClone.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)';
+    document.body.appendChild(touchClone);
+
+    card.classList.add('dragging');
+  }, { passive: true });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!touchClone) return;
+    var x = e.touches[0].clientX - touchStartX;
+    var y = e.touches[0].clientY - touchStartY;
+    touchClone.style.left = x + 'px';
+    touchClone.style.top = y + 'px';
+
+    // Highlight drop target
+    document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+    var el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    if (el) {
+      var drop = el.closest('.pipeline-col__drop');
+      if (drop) drop.classList.add('drag-over');
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    if (!touchClone) return;
+    document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+
+    // Find drop target from last touch position
+    var touch = e.changedTouches[0];
+    touchClone.style.display = 'none';
+    var el = document.elementFromPoint(touch.clientX, touch.clientY);
+    touchClone.style.display = '';
+    if (el) {
+      var drop = el.closest('.pipeline-col__drop');
+      if (drop && dragId) {
+        var newStage = drop.dataset.drop;
+        var order = orders.find(function(o) { return o.id === dragId; });
+        if (order && order.stage !== newStage) {
+          order.stage = newStage;
+          save(orders);
+        }
+      }
+    }
+
+    if (touchCard) touchCard.classList.remove('dragging');
+    if (touchClone && touchClone.parentNode) touchClone.parentNode.removeChild(touchClone);
+    touchCard = null;
+    touchClone = null;
+    dragId = null;
+    render();
+  });
+
+  // ── Initial render ─────────────────────────────────────────
+  render();
+})();
+</script>
+
 
 <!-- Service Worker Registration -->
 <script>
