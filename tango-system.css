@@ -73,7 +73,8 @@
    :ROOT — Design Tokens
    ================================================================ */
 :root {
-  --bg: #FFFFFF;
+  --bg: #F0EDEA;
+  --bg-surface: #FFFFFF;
   --text: #000000;
   --yellow: #FFE533;
   --green: #5DDB2F;
