@@ -934,6 +934,97 @@
 .next-step-text strong {
   color: var(--orange);
 }
+
+/* ============================================================ */
+/* EDITABLE CELLS — inline inputs for Supabase-backed tables     */
+/* ============================================================ */
+.edit-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(0,0,0,0.15);
+  text-align: center;
+  font-weight: 700;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  padding: 2px 0;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+}
+.edit-input::-webkit-inner-spin-button,
+.edit-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.edit-input:focus {
+  outline: none;
+  border-bottom: 2px solid var(--orange);
+}
+.edit-input--text {
+  text-align: left;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+/* Tappable status pills (cycle on click) */
+.status-pill--tap {
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s;
+}
+.status-pill--tap:active {
+  transform: scale(0.92);
+}
+
+/* ============================================================ */
+/* PRODUCTION BRAIN — collapsible details section                */
+/* ============================================================ */
+.brain-details {
+  margin-bottom: 32px;
+}
+.brain-details summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.brain-details summary::-webkit-details-marker { display: none; }
+.brain-details summary::before {
+  content: '▸';
+  font-size: 14px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.brain-details[open] summary::before {
+  transform: rotate(90deg);
+}
+.brain-subsection {
+  margin-top: 24px;
+}
+.brain-subsection__title {
+  font-family: var(--font-headline);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.brain-ref-card {
+  background: var(--bg-surface);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.10);
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.brain-ref-card strong {
+  color: var(--orange);
+}
 </style>
 </head>
 <body>
@@ -1081,88 +1172,78 @@
 
 
   <!-- ============================================================ -->
-  <!-- 📅 TIMELINE                                                   -->
+  <!-- 🧠 PRODUCTION BRAIN — Supabase-driven, editable               -->
   <!-- ============================================================ -->
-  <div class="section-header">
-    <h2 class="section-header__title">📅 Timeline</h2>
-    <span class="section-header__badge">Updated Feb 8</span>
-  </div>
-  <div class="data-table-wrap">
-    <table class="data-table data-table--compact">
-      <thead><tr><th>Date</th><th>Action</th><th>Status</th></tr></thead>
-      <tbody>
-        <tr><td class="col-num">Jan 30</td><td>Confirm bottles, order seals</td><td><span class="status-pill status-pill--green">Done</span></td></tr>
-        <tr><td class="col-num">Jan 31</td><td>Order ingredients</td><td><span class="status-pill status-pill--green">Done</span></td></tr>
-        <tr><td class="col-num">Feb 3</td><td>Ingredients arrive</td><td><span class="status-pill status-pill--green">Done</span></td></tr>
-        <tr><td class="col-num">Feb 4</td><td>COOK Hot + Mild (3 ollas)</td><td><span class="status-pill status-pill--green">Done</span></td></tr>
-        <tr><td class="col-num">Feb 5–6</td><td>Cool</td><td><span class="status-pill status-pill--green">Done</span></td></tr>
-        <tr><td class="col-num">Feb 7</td><td>PACK 2,248 bottles (~1,248 Hot, ~1,000 Mild)</td><td><span class="status-pill status-pill--green">Done</span></td></tr>
-        <tr style="background:rgba(255,233,51,0.12);"><td class="col-num" style="font-weight:700;">Feb 9</td><td style="font-weight:700;">UNFI MOR pickup</td><td><span class="status-pill status-pill--green">Ready</span></td></tr>
-        <tr style="background:rgba(255,149,0,0.12);"><td class="col-num" style="font-weight:700;">Feb 12</td><td style="font-weight:700;">PACK Mango (~204) + Truffle (~72) from drums</td><td><span class="status-pill status-pill--orange">Scheduled</span></td></tr>
-        <tr><td class="col-num">TBD</td><td>COOK 2 ollas Hot + 1 olla Sriracha</td><td><span class="status-pill status-pill--red">Need Schedule</span></td></tr>
-        <tr><td class="col-num">TBD+2</td><td>Cool new drums</td><td><span class="status-pill status-pill--muted">Pending</span></td></tr>
-        <tr><td class="col-num">TBD+3</td><td>PACK Hot + Sriracha</td><td><span class="status-pill status-pill--muted">Pending</span></td></tr>
-        <tr><td class="col-num">TBD</td><td>EXP pallet pickup</td><td><span class="status-pill status-pill--orange">Confirm Date</span></td></tr>
-        <tr style="background:rgba(255,233,51,0.12);"><td class="col-num" style="font-weight:700;">Feb 25</td><td style="font-weight:700;">UNFI HVA pickup</td><td><span class="status-pill status-pill--green">Ready</span></td></tr>
-      </tbody>
-    </table>
-  </div>
+  <details class="brain-details" open>
+    <summary>
+      <div class="section-header" style="margin-bottom:0;flex:1;">
+        <h2 class="section-header__title">🧠 Production Brain</h2>
+        <span class="section-header__badge" id="brain-date">Loading…</span>
+      </div>
+    </summary>
 
+    <!-- Timeline -->
+    <div class="brain-subsection">
+      <div class="brain-subsection__title">📅 Timeline</div>
+      <div class="data-table-wrap">
+        <table class="data-table data-table--compact">
+          <thead><tr><th>Date</th><th>Action</th><th>Status</th></tr></thead>
+          <tbody id="brain-timeline"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px;">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
 
-  <!-- ============================================================ -->
-  <!-- 🛒 WHAT WE NEED                                              -->
-  <!-- ============================================================ -->
-  <div class="section-header">
-    <h2 class="section-header__title">🛒 What We Need</h2>
-    <span class="section-header__badge">Next Cook</span>
-  </div>
+    <!-- Cash Flow -->
+    <div class="brain-subsection">
+      <div class="brain-subsection__title">💰 Cash Flow</div>
+      <div class="data-table-wrap">
+        <table class="data-table data-table--compact">
+          <thead><tr><th>Date</th><th>In</th><th>Out</th><th>Balance</th></tr></thead>
+          <tbody id="brain-cashflow"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px;">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
 
-  <div class="grid-2col">
+    <!-- Bills Owed -->
+    <div class="brain-subsection">
+      <div class="brain-subsection__title">📋 Bills Owed</div>
+      <div class="data-table-wrap">
+        <table class="data-table data-table--compact">
+          <thead><tr><th>To</th><th>Amount</th><th>Due</th><th>Plan</th></tr></thead>
+          <tbody id="brain-bills"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px;">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- Ingredients -->
-    <div>
-      <div class="data-table-wrap" style="margin-bottom:24px;">
+    <div class="brain-subsection">
+      <div class="brain-subsection__title">🥕 Ingredients</div>
+      <div class="data-table-wrap">
         <table class="data-table data-table--compact">
-          <thead><tr><th>Ingredient</th><th>Need</th><th>Have</th><th>Order</th></tr></thead>
-          <tbody>
-            <tr><td class="col-name">Carrots</td><td class="col-num">400 lb</td><td class="col-num">100 lb</td><td class="col-num" style="color:#CC0000; font-weight:700;">300 lb</td></tr>
-            <tr><td class="col-name">Lime Juice</td><td class="col-num">5 cases</td><td class="col-num">4.5 cases</td><td class="col-num">1 case</td></tr>
-            <tr><td class="col-name">Garlic</td><td class="col-num">5 cases</td><td class="col-num">1 case</td><td class="col-num" style="color:#CC0000; font-weight:700;">4 cases</td></tr>
-            <tr><td class="col-name">Culantro</td><td class="col-num">3 cases</td><td class="col-num">0</td><td class="col-num" style="color:#CC0000; font-weight:700;">3 cases</td></tr>
-            <tr><td class="col-name">Habanero</td><td class="col-num">5 cases</td><td class="col-num">0</td><td class="col-num" style="color:#CC0000; font-weight:700;">5 cases</td></tr>
-            <tr><td class="col-name">ACV</td><td class="col-num">10 cases</td><td class="col-num">1.75</td><td class="col-num" style="color:#CC0000; font-weight:700;">8 cases</td></tr>
-            <tr><td class="col-name">Salt</td><td class="col-num">1 bag</td><td class="col-num">?</td><td class="col-num">1 bag</td></tr>
-          </tbody>
+          <thead><tr><th>Ingredient</th><th>Have</th><th>Need</th><th>Order</th></tr></thead>
+          <tbody id="brain-ingredients"><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px;">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
 
-    <!-- Shifts + Materials -->
-    <div>
-      <div class="data-table-wrap" style="margin-bottom:24px;">
+    <!-- Materials -->
+    <div class="brain-subsection">
+      <div class="brain-subsection__title">📦 Materials</div>
+      <div class="data-table-wrap">
         <table class="data-table data-table--compact">
-          <thead><tr><th>Type</th><th>Hours</th><th>Cost</th></tr></thead>
-          <tbody>
-            <tr><td class="col-name">Cook Shift</td><td class="col-num">4 hr</td><td class="col-num">$400</td></tr>
-            <tr><td class="col-name">Pack Shift</td><td class="col-num">8 hr</td><td class="col-num">$1,000</td></tr>
-            <tr><td class="col-name" style="font-weight:700;">Total Labor</td><td></td><td class="col-num" style="font-weight:700;">$1,400</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="data-table-wrap" style="margin-bottom:24px;">
-        <table class="data-table data-table--compact">
-          <thead><tr><th>Material</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td class="col-name">Empty Bottles</td><td>~14,750 <span class="status-pill status-pill--green" style="margin-left:8px;">Good</span></td></tr>
-            <tr><td class="col-name">Caps</td><td>Have <span class="status-pill status-pill--green" style="margin-left:8px;">Good</span></td></tr>
-            <tr><td class="col-name">Labels (all except Mild)</td><td>Have <span class="status-pill status-pill--green" style="margin-left:8px;">Good</span></td></tr>
-            <tr><td class="col-name">Labels (Mild)</td><td>~500 left <span class="status-pill status-pill--orange" style="margin-left:8px;">Order More</span></td></tr>
-            <tr><td class="col-name">Seals</td><td>OTW — 3,000 foil liners <span class="status-pill status-pill--yellow" style="margin-left:8px;">Shipping</span></td></tr>
-            <tr><td class="col-name">6-Pack Boxes</td><td>300 XL boxes <span class="status-pill status-pill--green" style="margin-left:8px;">Good</span></td></tr>
-          </tbody>
+          <thead><tr><th>Item</th><th>Status</th><th>Note</th></tr></thead>
+          <tbody id="brain-materials"><tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px;">Loading…</td></tr></tbody>
         </table>
       </div>
     </div>
-  </div>
+
+    <!-- Reference -->
+    <div class="brain-subsection">
+      <div class="brain-subsection__title">📖 Reference</div>
+      <div class="brain-ref-card" id="brain-reference">Loading…</div>
+    </div>
+
+  </details>
 
 
   <!-- ============================================================ -->
@@ -1848,7 +1929,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <!-- ============================================================ -->
-<!-- 🔥 PRODUCTION TABLES — Supabase-backed flavor grids            -->
+<!-- 🔥 PRODUCTION ENGINE — Supabase-backed, editable               -->
 <!-- ============================================================ -->
 <script>
 (function() {
@@ -1858,85 +1939,140 @@
   try { sb = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) {}
 
   var FLAVORS = ['hot','mild','mango','truffle','sriracha','thai'];
-  var COLORS = { hot:'#CC0000', mild:'#3BA226', mango:'#F5D623', truffle:'#1A1A1A', sriracha:'#2B6EC2', thai:'#F5D623' };
+  var DRUM_BOTTLES = 625;
 
-  function fmt(n) {
-    if (n === 0) return '—';
-    return n.toLocaleString();
-  }
-  function cellClass(n, threshold) {
-    if (n === 0) return 'cell-zero';
-    if (n < 0) return 'cell-bad';
-    if (threshold && n < threshold) return 'cell-warn';
-    return '';
-  }
+  function fmt(n) { return n === 0 ? '—' : n.toLocaleString(); }
+  function $(id) { return document.getElementById(id); }
 
-  async function loadSettings(key) {
+  async function loadS(key) {
     if (!sb) return null;
     try {
-      var res = await sb.from('settings').select('value').eq('key', key).single();
-      return res.data ? res.data.value : null;
+      var r = await sb.from('settings').select('value').eq('key', key).single();
+      return r.data ? r.data.value : null;
     } catch(e) { return null; }
   }
-
-  async function loadAllOrders() {
-    if (!sb) return [];
-    try {
-      var res = await sb.from('tango_orders').select('*').order('created_at');
-      return res.data || [];
-    } catch(e) { return []; }
+  function saveS(key, value) {
+    if (!sb) return;
+    value.updated = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    sb.from('settings').upsert({ key: key, value: value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // BOOT — load everything, render everything
+  // ══════════════════════════════════════════════════════════════
   async function boot() {
-    var packed = await loadSettings('tango_production_packed');
-    var drums = await loadSettings('tango_production_drums');
-    var demand = await loadSettings('tango_production_demand');
-    var allOrders = await loadAllOrders();
+    var [packed, drums, demand, timeline, cashflow, bills, ingOnHand, ingNeeded, materials, shifts, conversions, ordersRes] = await Promise.all([
+      loadS('tango_production_packed'),
+      loadS('tango_production_drums'),
+      loadS('tango_production_demand'),
+      loadS('tango_production_timeline'),
+      loadS('tango_production_cashflow'),
+      loadS('tango_production_bills'),
+      loadS('tango_production_ingredients_on_hand'),
+      loadS('tango_production_ingredients_needed'),
+      loadS('tango_production_materials'),
+      loadS('tango_production_shifts'),
+      loadS('tango_production_conversions'),
+      sb ? sb.from('tango_orders').select('*').order('created_at') : { data: [] }
+    ]);
+    var allOrders = (ordersRes && ordersRes.data) || [];
 
     if (!packed || !drums) {
-      document.getElementById('snapshot-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No production data in Supabase yet.</td></tr>';
+      $('snapshot-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No production data yet.</td></tr>';
       return;
     }
 
-    // ── Build lookup maps ───────────────────────────────
+    // ── Lookup maps ─────────────────────────────────────
     var packedMap = {};
     (packed.packed || []).forEach(function(p) { packedMap[p.flavor] = p.bottles || 0; });
     var drumsMap = {};
     (drums.drums || []).forEach(function(d) { drumsMap[d.flavor] = d; });
 
-    // ── TABLE 1: Flavor Snapshot ──────────────────────────
-    document.getElementById('snapshot-date').textContent = 'Updated ' + (packed.updated || '?');
+    // ══════════════════════════════════════════════════════
+    // TABLE 1: Flavor Snapshot (EDITABLE packed + drums)
+    // ══════════════════════════════════════════════════════
+    $('snapshot-date').textContent = 'Updated ' + (packed.updated || '?');
 
-    var rows = [
-      { label: 'Packed Bottles', key: 'packed' },
-      { label: '6-Packs (cases)', key: 'cases' },
-      { label: 'Botes (drums)', key: 'drums' },
-      { label: 'Total Once Packed', key: 'total' }
-    ];
-
-    var html = '';
-    rows.forEach(function(row) {
-      html += '<tr><td class="col-name" style="font-weight:600;">' + row.label + '</td>';
+    function renderSnapshot() {
+      var h = '';
+      // Row 1: Packed Bottles (editable)
+      h += '<tr><td class="col-name" style="font-weight:600;">Packed Bottles</td>';
       FLAVORS.forEach(function(f) {
-        var val = 0;
-        if (row.key === 'packed') {
-          val = packedMap[f] || 0;
-        } else if (row.key === 'cases') {
-          val = Math.floor((packedMap[f] || 0) / 6);
-        } else if (row.key === 'drums') {
-          val = drumsMap[f] ? drumsMap[f].drums : 0;
-        } else if (row.key === 'total') {
-          val = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
-        }
-        var cls = val === 0 ? 'cell-zero' : '';
-        html += '<td class="' + cls + '">' + fmt(val) + '</td>';
+        var v = packedMap[f] || 0;
+        h += '<td><input class="edit-input" type="number" min="0" data-field="packed" data-flavor="' + f + '" value="' + v + '"></td>';
       });
-      html += '</tr>';
-    });
-    document.getElementById('snapshot-body').innerHTML = html;
+      h += '</tr>';
+      // Row 2: 6-Packs (auto-calc)
+      h += '<tr><td class="col-name" style="font-weight:600;">6-Packs (cases)</td>';
+      FLAVORS.forEach(function(f) {
+        var v = Math.floor((packedMap[f] || 0) / 6);
+        h += '<td class="' + (v === 0 ? 'cell-zero' : '') + '" data-calc="cases-' + f + '">' + fmt(v) + '</td>';
+      });
+      h += '</tr>';
+      // Row 3: Botes / drums (editable)
+      h += '<tr><td class="col-name" style="font-weight:600;">Botes (drums)</td>';
+      FLAVORS.forEach(function(f) {
+        var v = drumsMap[f] ? drumsMap[f].drums : 0;
+        h += '<td><input class="edit-input" type="number" min="0" data-field="drums" data-flavor="' + f + '" value="' + v + '"></td>';
+      });
+      h += '</tr>';
+      // Row 4: Total once packed (auto-calc)
+      h += '<tr class="row-total"><td>Total Once Packed</td>';
+      FLAVORS.forEach(function(f) {
+        var v = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
+        h += '<td data-calc="total-' + f + '">' + fmt(v) + '</td>';
+      });
+      h += '</tr>';
+      $('snapshot-body').innerHTML = h;
+    }
+    renderSnapshot();
 
-    // ── TABLE 2: Order Demand ─────────────────────────────
-    // Only show orders that have items (processing/new)
+    // Editable snapshot handlers
+    $('flavor-snapshot').addEventListener('change', function(e) {
+      var inp = e.target;
+      if (!inp.classList.contains('edit-input')) return;
+      var field = inp.dataset.field;
+      var flavor = inp.dataset.flavor;
+      var val = parseInt(inp.value) || 0;
+      if (val < 0) val = 0;
+      inp.value = val;
+
+      if (field === 'packed') {
+        packedMap[flavor] = val;
+        var arr = packed.packed || [];
+        var found = arr.find(function(p) { return p.flavor === flavor; });
+        if (found) found.bottles = val; else arr.push({ flavor: flavor, bottles: val });
+        packed.packed = arr;
+        saveS('tango_production_packed', packed);
+      } else if (field === 'drums') {
+        if (!drumsMap[flavor]) drumsMap[flavor] = { flavor: flavor, drums: 0, bottles_worth: 0 };
+        drumsMap[flavor].drums = val;
+        drumsMap[flavor].bottles_worth = val * DRUM_BOTTLES;
+        var darr = drums.drums || [];
+        var df = darr.find(function(d) { return d.flavor === flavor; });
+        if (df) { df.drums = val; df.bottles_worth = val * DRUM_BOTTLES; }
+        else darr.push(drumsMap[flavor]);
+        drums.drums = darr;
+        saveS('tango_production_drums', drums);
+      }
+
+      // Recalc derived cells
+      FLAVORS.forEach(function(f) {
+        var casesEl = document.querySelector('[data-calc="cases-' + f + '"]');
+        var totalEl = document.querySelector('[data-calc="total-' + f + '"]');
+        var p = packedMap[f] || 0;
+        var dw = drumsMap[f] ? drumsMap[f].bottles_worth : 0;
+        if (casesEl) { casesEl.textContent = fmt(Math.floor(p / 6)); casesEl.className = p === 0 ? 'cell-zero' : ''; }
+        if (totalEl) totalEl.textContent = fmt(p + dw);
+      });
+
+      $('snapshot-date').textContent = 'Updated ' + new Date().toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      renderGap();
+    });
+
+    // ══════════════════════════════════════════════════════
+    // TABLE 2: Order Demand
+    // ══════════════════════════════════════════════════════
     var activeOrders = allOrders.filter(function(o) {
       return o.items && o.items.length > 0 && (o.stage === 'new' || o.stage === 'processing');
     });
@@ -1946,143 +2082,225 @@
 
     var dhtml = '';
     activeOrders.forEach(function(order) {
-      var flavorMap = {};
-      (order.items || []).forEach(function(item) {
-        var key = item.flavor.toLowerCase();
-        flavorMap[key] = (item.cases || 0) * 6;
-      });
-
+      var fm = {};
+      (order.items || []).forEach(function(it) { fm[it.flavor.toLowerCase()] = (it.cases || 0) * 6; });
       dhtml += '<tr><td class="col-name" style="font-weight:600;">' + (order.channel || '') + '<br><span style="font-size:11px;color:var(--muted);">' + (order.title || '') + '</span></td>';
       FLAVORS.forEach(function(f) {
-        var val = flavorMap[f] || 0;
-        demandTotals[f] += val;
-        var cls = val === 0 ? 'cell-zero' : '';
-        dhtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
+        var v = fm[f] || 0; demandTotals[f] += v;
+        dhtml += '<td class="' + (v === 0 ? 'cell-zero' : '') + '">' + fmt(v) + '</td>';
       });
       dhtml += '</tr>';
     });
 
-    // Add demand from non-order channels if we have demand data
     if (demand && demand.demand) {
-      var extraRow = {};
-      FLAVORS.forEach(function(f) { extraRow[f] = 0; });
+      var extra = {};
+      FLAVORS.forEach(function(f) { extra[f] = 0; });
       demand.demand.forEach(function(d) {
-        var f = d.flavor;
-        var orderDemand = demandTotals[f] || 0;
-        var otherDemand = (d.amazon || 0) + (d.faire_dtc || 0) + (d.samples || 0);
-        if (otherDemand > 0) extraRow[f] = otherDemand;
+        extra[d.flavor] = (d.amazon || 0) + (d.faire_dtc || 0) + (d.samples || 0);
       });
-      var hasExtras = FLAVORS.some(function(f) { return extraRow[f] > 0; });
-      if (hasExtras) {
+      if (FLAVORS.some(function(f) { return extra[f] > 0; })) {
         dhtml += '<tr><td class="col-name" style="font-weight:600;">Amazon + Faire<br><span style="font-size:11px;color:var(--muted);">DTC + Samples</span></td>';
         FLAVORS.forEach(function(f) {
-          var val = extraRow[f];
-          demandTotals[f] += val;
-          var cls = val === 0 ? 'cell-zero' : '';
-          dhtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
+          demandTotals[f] += extra[f];
+          dhtml += '<td class="' + (extra[f] === 0 ? 'cell-zero' : '') + '">' + fmt(extra[f]) + '</td>';
         });
         dhtml += '</tr>';
       }
     }
-
-    // Totals row
     dhtml += '<tr class="row-total"><td>Total Need</td>';
-    FLAVORS.forEach(function(f) {
-      dhtml += '<td>' + fmt(demandTotals[f]) + '</td>';
-    });
+    FLAVORS.forEach(function(f) { dhtml += '<td>' + fmt(demandTotals[f]) + '</td>'; });
     dhtml += '</tr>';
-    document.getElementById('demand-body').innerHTML = dhtml;
+    $('demand-body').innerHTML = dhtml;
 
-    // ── TABLE 3: Gap Analysis ─────────────────────────────
-    var ghtml = '';
-
-    // Row 1: Total need
-    ghtml += '<tr><td class="col-name" style="font-weight:600;">Total Need</td>';
-    FLAVORS.forEach(function(f) {
-      var cls = demandTotals[f] === 0 ? 'cell-zero' : '';
-      ghtml += '<td class="' + cls + '">' + fmt(demandTotals[f]) + '</td>';
-    });
-    ghtml += '</tr>';
-
-    // Row 2: Packed bottles (have)
-    ghtml += '<tr><td class="col-name" style="font-weight:600;">Packed (have)</td>';
-    FLAVORS.forEach(function(f) {
-      var val = packedMap[f] || 0;
-      var cls = val === 0 ? 'cell-zero' : 'cell-ok';
-      ghtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
-    });
-    ghtml += '</tr>';
-
-    // Row 3: In drums
-    ghtml += '<tr><td class="col-name" style="font-weight:600;">In Drums</td>';
-    FLAVORS.forEach(function(f) {
-      var val = drumsMap[f] ? drumsMap[f].bottles_worth : 0;
-      var cls = val === 0 ? 'cell-zero' : 'cell-ok';
-      ghtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
-    });
-    ghtml += '</tr>';
-
-    // Row 4: Gap (need - have - drums)
-    ghtml += '<tr class="row-total"><td>Gap</td>';
+    // ══════════════════════════════════════════════════════
+    // TABLE 3: Gap Analysis (re-renders when snapshot changes)
+    // ══════════════════════════════════════════════════════
     var gaps = {};
-    FLAVORS.forEach(function(f) {
-      var need = demandTotals[f];
-      var have = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
-      var gap = need - have;
-      gaps[f] = gap;
-      var cls = '';
-      if (gap <= 0) cls = 'cell-ok';
-      else cls = 'cell-bad';
-      ghtml += '<td class="' + cls + '">' + (gap <= 0 ? '✅ +' + fmt(Math.abs(gap)) : '❌ ' + fmt(gap)) + '</td>';
-    });
-    ghtml += '</tr>';
-    document.getElementById('gap-body').innerHTML = ghtml;
+    function renderGap() {
+      var g = '';
+      g += '<tr><td class="col-name" style="font-weight:600;">Total Need</td>';
+      FLAVORS.forEach(function(f) { g += '<td class="' + (demandTotals[f] === 0 ? 'cell-zero' : '') + '">' + fmt(demandTotals[f]) + '</td>'; });
+      g += '</tr><tr><td class="col-name" style="font-weight:600;">Packed (have)</td>';
+      FLAVORS.forEach(function(f) { var v = packedMap[f] || 0; g += '<td class="' + (v === 0 ? 'cell-zero' : 'cell-ok') + '">' + fmt(v) + '</td>'; });
+      g += '</tr><tr><td class="col-name" style="font-weight:600;">In Drums</td>';
+      FLAVORS.forEach(function(f) { var v = drumsMap[f] ? drumsMap[f].bottles_worth : 0; g += '<td class="' + (v === 0 ? 'cell-zero' : 'cell-ok') + '">' + fmt(v) + '</td>'; });
+      g += '</tr><tr class="row-total"><td>Gap</td>';
+      FLAVORS.forEach(function(f) {
+        var gap = demandTotals[f] - (packedMap[f] || 0) - (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
+        gaps[f] = gap;
+        g += '<td class="' + (gap <= 0 ? 'cell-ok' : 'cell-bad') + '">' + (gap <= 0 ? '+' + fmt(Math.abs(gap)) : fmt(gap)) + '</td>';
+      });
+      g += '</tr>';
+      $('gap-body').innerHTML = g;
+      renderNextSteps();
+    }
+    renderGap();
 
-    // ── SECTION 4: Next Steps ─────────────────────────────
-    var steps = [];
-
-    // Check what needs cooking
-    var needCook = [];
-    FLAVORS.forEach(function(f) {
-      if (gaps[f] > 0) needCook.push({ flavor: f, gap: gaps[f] });
-    });
-    if (needCook.length > 0) {
-      var cookList = needCook.map(function(c) {
-        return '<strong>' + c.flavor.charAt(0).toUpperCase() + c.flavor.slice(1) + '</strong> (' + fmt(c.gap) + ' bottles short)';
-      }).join(', ');
-      steps.push('Schedule cook day for: ' + cookList + '. Mon Feb 24 planned — 4hr cook shift ($400).');
+    // ══════════════════════════════════════════════════════
+    // SECTION 4: Next Steps (auto-generated)
+    // ══════════════════════════════════════════════════════
+    function renderNextSteps() {
+      var steps = [];
+      var cook = [];
+      FLAVORS.forEach(function(f) { if (gaps[f] > 0) cook.push('<strong>' + f.charAt(0).toUpperCase() + f.slice(1) + '</strong> (' + fmt(gaps[f]) + ' short)'); });
+      if (cook.length > 0) steps.push('Cook needed: ' + cook.join(', ') + '. Mon Feb 24 planned ($400).');
+      var pack = [];
+      FLAVORS.forEach(function(f) {
+        var dw = drumsMap[f] ? drumsMap[f].bottles_worth : 0;
+        if (dw > 0 && demandTotals[f] > (packedMap[f] || 0)) pack.push('<strong>' + f.charAt(0).toUpperCase() + f.slice(1) + '</strong> (' + fmt(Math.min(dw, demandTotals[f] - (packedMap[f] || 0))) + ')');
+      });
+      if (pack.length > 0) steps.push('Pack from drums: ' + pack.join(', ') + '. Thu Feb 27 planned ($1,000).');
+      steps.push('Order more <strong>Mild labels</strong> — only ~500 left.');
+      steps.push('Contact <strong>Jason at EXP</strong> — push pickup to ~Feb 28.');
+      var s = '';
+      steps.forEach(function(t, i) { s += '<div class="next-step-item"><span class="next-step-num">' + (i + 1) + '</span><span class="next-step-text">' + t + '</span></div>'; });
+      $('next-steps').innerHTML = s;
     }
 
-    // Check what needs packing from drums
-    var needPack = [];
-    FLAVORS.forEach(function(f) {
-      var drumVal = drumsMap[f] ? drumsMap[f].bottles_worth : 0;
-      if (drumVal > 0 && demandTotals[f] > (packedMap[f] || 0)) {
-        var toPack = Math.min(drumVal, demandTotals[f] - (packedMap[f] || 0));
-        needPack.push({ flavor: f, bottles: toPack });
-      }
-    });
-    if (needPack.length > 0) {
-      var packList = needPack.map(function(p) {
-        return '<strong>' + p.flavor.charAt(0).toUpperCase() + p.flavor.slice(1) + '</strong> (' + fmt(p.bottles) + ')';
-      }).join(', ');
-      steps.push('Pack from drums: ' + packList + '. Thu Feb 27 planned — 4hr pack shift ($1,000).');
+    // ══════════════════════════════════════════════════════
+    // PRODUCTION BRAIN — Timeline, Cash Flow, Bills, etc.
+    // ══════════════════════════════════════════════════════
+    $('brain-date').textContent = 'Supabase-backed';
+
+    // ── Timeline ──────────────────────────────────────────
+    if (timeline && timeline.events) {
+      var statusMap = { done:'green', scheduled:'orange', waiting:'yellow', pending:'muted', todo:'red' };
+      var statusCycle = ['done','scheduled','waiting','pending','todo'];
+      var th = '';
+      timeline.events.forEach(function(ev, idx) {
+        var pillCls = 'status-pill--' + (statusMap[ev.status] || 'muted');
+        var label = ev.status.charAt(0).toUpperCase() + ev.status.slice(1);
+        var highlight = (ev.status === 'scheduled' || ev.status === 'todo') ? ' style="background:rgba(255,149,0,0.08);"' : '';
+        th += '<tr' + highlight + '><td class="col-num">' + ev.date + '</td><td>' + ev.action + '</td>';
+        th += '<td><span class="status-pill ' + pillCls + ' status-pill--tap" data-tl-idx="' + idx + '">' + label + '</span></td></tr>';
+      });
+      $('brain-timeline').innerHTML = th;
+
+      $('brain-timeline').addEventListener('click', function(e) {
+        var pill = e.target.closest('.status-pill--tap[data-tl-idx]');
+        if (!pill) return;
+        var idx = parseInt(pill.dataset.tlIdx);
+        var ev = timeline.events[idx];
+        var ci = statusCycle.indexOf(ev.status);
+        ev.status = statusCycle[(ci + 1) % statusCycle.length];
+        pill.className = 'status-pill status-pill--' + (statusMap[ev.status] || 'muted') + ' status-pill--tap';
+        pill.textContent = ev.status.charAt(0).toUpperCase() + ev.status.slice(1);
+        var tr = pill.closest('tr');
+        tr.style.background = (ev.status === 'scheduled' || ev.status === 'todo') ? 'rgba(255,149,0,0.08)' : '';
+        saveS('tango_production_timeline', timeline);
+      });
     }
 
-    // Check Mild labels
-    steps.push('Order more <strong>Mild labels</strong> — only ~500 left, need 180+ for EXP alone.');
+    // ── Cash Flow ─────────────────────────────────────────
+    if (cashflow && cashflow.timeline) {
+      var ch = '';
+      cashflow.timeline.forEach(function(row) {
+        var balCls = row.balance < 0 ? 'cell-bad' : (row.balance < 500 ? 'cell-warn' : '');
+        var note = row.note ? ' <span style="font-size:10px;color:var(--muted);">(' + row.note + ')</span>' : '';
+        ch += '<tr><td class="col-num">' + row.date + '</td>';
+        ch += '<td class="col-num" style="color:var(--green);">' + (row.in || '—') + '</td>';
+        ch += '<td class="col-num" style="color:#CC0000;">' + (row.out || '—') + '</td>';
+        ch += '<td class="col-num ' + balCls + '">$' + row.balance.toLocaleString() + note + '</td></tr>';
+      });
+      $('brain-cashflow').innerHTML = ch;
+    }
 
-    // EXP pickup
-    steps.push('Contact <strong>Jason at EXP</strong> — push pickup to ~Feb 28 (was Feb 19). Ship complete, 140 cases.');
+    // ── Bills ─────────────────────────────────────────────
+    if (bills && bills.bills) {
+      var bh = '';
+      bills.bills.forEach(function(bill, idx) {
+        bh += '<tr><td class="col-name">' + bill.to + '</td>';
+        bh += '<td class="col-num">$' + bill.amount.toLocaleString() + '</td>';
+        bh += '<td class="col-num">' + bill.due + '</td>';
+        bh += '<td><input class="edit-input edit-input--text" type="text" data-bill-idx="' + idx + '" value="' + (bill.plan || '') + '"></td></tr>';
+      });
+      bh += '<tr class="row-total"><td>Total</td><td class="col-num">$' + (bills.total || 0).toLocaleString() + '</td><td></td><td></td></tr>';
+      $('brain-bills').innerHTML = bh;
 
-    // Count Hots
-    steps.push('Do a real <strong>Hot bottle count</strong> next time at kitchen. Last confirmed: ~100 (Feb 17).');
+      $('brain-bills').addEventListener('change', function(e) {
+        var inp = e.target;
+        if (inp.dataset.billIdx === undefined) return;
+        bills.bills[parseInt(inp.dataset.billIdx)].plan = inp.value;
+        saveS('tango_production_bills', bills);
+      });
+    }
 
-    var shtml = '';
-    steps.forEach(function(s, i) {
-      shtml += '<div class="next-step-item"><span class="next-step-num">' + (i + 1) + '</span><span class="next-step-text">' + s + '</span></div>';
-    });
-    document.getElementById('next-steps').innerHTML = shtml;
+    // ── Ingredients ───────────────────────────────────────
+    if (ingOnHand && ingNeeded) {
+      var ih = '';
+      var neededMap = {};
+      (ingNeeded.ingredients || []).forEach(function(i) { neededMap[i.item] = i; });
+      (ingNeeded.ingredients || []).forEach(function(ing, idx) {
+        var onHand = (ingOnHand.ingredients || []).find(function(oh) { return oh.item === ing.item; });
+        var haveVal = onHand ? onHand.amount : '?';
+        ih += '<tr><td class="col-name">' + ing.item + '</td>';
+        ih += '<td><input class="edit-input edit-input--text" type="text" data-ing-idx="' + idx + '" value="' + haveVal + '"></td>';
+        ih += '<td class="col-num">' + (ing.need || '—') + '</td>';
+        ih += '<td class="col-num" style="color:#CC0000;font-weight:700;">' + (ing.order || '—') + '</td></tr>';
+      });
+      $('brain-ingredients').innerHTML = ih;
+
+      $('brain-ingredients').addEventListener('change', function(e) {
+        var inp = e.target;
+        if (inp.dataset.ingIdx === undefined) return;
+        var idx = parseInt(inp.dataset.ingIdx);
+        var item = ingNeeded.ingredients[idx].item;
+        var arr = ingOnHand.ingredients || [];
+        var found = arr.find(function(i) { return i.item === item; });
+        if (found) found.amount = inp.value;
+        else arr.push({ item: item, amount: inp.value });
+        ingOnHand.ingredients = arr;
+        saveS('tango_production_ingredients_on_hand', ingOnHand);
+      });
+    }
+
+    // ── Materials ─────────────────────────────────────────
+    if (materials && materials.materials) {
+      var mStatuses = ['Have', 'Low', 'Order', 'OTW'];
+      var mStatusColors = { Have:'green', Low:'yellow', Order:'red', OTW:'orange' };
+      var mh = '';
+      materials.materials.forEach(function(mat, idx) {
+        var st = mat.status || 'Have';
+        var stColor = mStatusColors[st] || mStatusColors.Have || 'muted';
+        mh += '<tr><td class="col-name">' + mat.item + '</td>';
+        mh += '<td><span class="status-pill status-pill--' + stColor + ' status-pill--tap" data-mat-idx="' + idx + '">' + st + '</span></td>';
+        mh += '<td><input class="edit-input edit-input--text" type="text" data-mat-note-idx="' + idx + '" value="' + (mat.note || '') + '"></td></tr>';
+      });
+      $('brain-materials').innerHTML = mh;
+
+      $('brain-materials').addEventListener('click', function(e) {
+        var pill = e.target.closest('.status-pill--tap[data-mat-idx]');
+        if (!pill) return;
+        var idx = parseInt(pill.dataset.matIdx);
+        var mat = materials.materials[idx];
+        var ci = mStatuses.indexOf(mat.status);
+        mat.status = mStatuses[(ci + 1) % mStatuses.length];
+        var col = mStatusColors[mat.status] || 'muted';
+        pill.className = 'status-pill status-pill--' + col + ' status-pill--tap';
+        pill.textContent = mat.status;
+        saveS('tango_production_materials', materials);
+      });
+      $('brain-materials').addEventListener('change', function(e) {
+        var inp = e.target;
+        if (inp.dataset.matNoteIdx === undefined) return;
+        materials.materials[parseInt(inp.dataset.matNoteIdx)].note = inp.value;
+        saveS('tango_production_materials', materials);
+      });
+    }
+
+    // ── Reference Card ───────────────────────────────────
+    var ref = '';
+    if (shifts) {
+      ref += '<strong>Cook:</strong> ' + (shifts.cook ? shifts.cook.hours + 'hr / $' + shifts.cook.cost : '?') + ' &nbsp;|&nbsp; ';
+      ref += '<strong>Pack:</strong> ' + (shifts.pack ? shifts.pack.hours + 'hr / $' + shifts.pack.cost : '?') + '<br>';
+    }
+    if (conversions) {
+      ref += '<strong>1 drum</strong> = ~' + (conversions.drum_to_bottles || 625) + ' bottles &nbsp;|&nbsp; ';
+      ref += '<strong>1 case</strong> = ' + (conversions.case_to_bottles || 6) + ' bottles &nbsp;|&nbsp; ';
+      ref += '<strong>1 cook shift</strong> = ' + (conversions.cook_shift_ollas || 3) + ' ollas<br>';
+    }
+    ref += '<strong>Kitchen:</strong> Foodies Urban Kitchen, 8922 Norris Ave, Sun Valley';
+    $('brain-reference').innerHTML = ref;
   }
 
   boot();

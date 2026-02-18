@@ -1,6 +1,6 @@
 // Tango Dashboard — Service Worker
 // Bump CACHE_VERSION to force update on all clients
-const CACHE_VERSION = 'tango-v4';
+const CACHE_VERSION = 'tango-v5';
 const ASSETS = [
   './',
   './index.html',
