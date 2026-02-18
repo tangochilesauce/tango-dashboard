@@ -830,6 +830,110 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================ */
+/* FLAVOR GRID TABLES — 6-column flavor layout                   */
+/* ============================================================ */
+.data-table--flavor-grid {
+  table-layout: fixed;
+}
+.data-table--flavor-grid th:first-child {
+  width: 120px;
+}
+.data-table--flavor-grid th:not(:first-child) {
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+}
+.data-table--flavor-grid td:not(:first-child) {
+  text-align: center;
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+.data-table--flavor-grid td.cell-ok {
+  color: var(--green);
+  font-weight: 700;
+}
+.data-table--flavor-grid td.cell-warn {
+  color: var(--yellow);
+  font-weight: 700;
+}
+.data-table--flavor-grid td.cell-bad {
+  color: #CC0000;
+  font-weight: 700;
+}
+.data-table--flavor-grid td.cell-zero {
+  color: var(--muted);
+  opacity: 0.4;
+}
+.data-table--flavor-grid tr.row-total td {
+  font-weight: 700;
+  border-top: 2px solid var(--text);
+  padding-top: 10px;
+}
+.data-table--flavor-grid tr.row-total td:first-child {
+  font-family: var(--font-headline);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* ============================================================ */
+/* NEXT STEPS CARD                                               */
+/* ============================================================ */
+.next-steps-card {
+  background: var(--bg);
+  border-radius: 20px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.20);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.next-steps-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.25;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+  border-radius: 20px;
+}
+.next-steps-card > * {
+  position: relative;
+  z-index: 1;
+}
+.next-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.next-step-item:last-child {
+  border-bottom: none;
+}
+.next-step-num {
+  font-family: 'Beast', var(--font-headline);
+  font-size: 20px;
+  color: var(--orange);
+  line-height: 1.2;
+  flex-shrink: 0;
+  width: 24px;
+}
+.next-step-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.next-step-text strong {
+  color: var(--orange);
+}
 </style>
 </head>
 <body>
@@ -844,37 +948,92 @@
 <div class="dashboard" style="padding-top:24px;">
 
   <!-- ============================================================ -->
-  <!-- STAT CARDS — Production Overview                              -->
+  <!-- 🔥 FLAVOR SNAPSHOT — What We Have (6 columns)                 -->
   <!-- ============================================================ -->
-  <div class="stat-row">
-    <div class="stat-card stat-card--highlight">
-      <p class="stat-card__label">Active Orders</p>
-      <p class="stat-card__value">3</p>
-      <p class="stat-card__delta stat-card__delta--up">EXP + 2 UNFI</p>
-    </div>
-    <div class="stat-card">
-      <p class="stat-card__label">Bottles Needed</p>
-      <p class="stat-card__value">2,256</p>
-      <p class="stat-card__delta stat-card__delta--flat">Across all POs</p>
-    </div>
-    <div class="stat-card">
-      <p class="stat-card__label">Packed &amp; Ready</p>
-      <p class="stat-card__value">~1,232</p>
-      <p class="stat-card__delta stat-card__delta--up">After Feb 7 pack</p>
-    </div>
-    <div class="stat-card">
-      <p class="stat-card__label">Next Action</p>
-      <p class="stat-card__value" style="font-size:24px;">PACK</p>
-      <p class="stat-card__delta stat-card__delta--down">Mango + Truffle Wed</p>
-    </div>
+  <div class="section-header">
+    <h2 class="section-header__title">🔥 Flavor Snapshot</h2>
+    <span class="section-header__badge" id="snapshot-date">Loading…</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table data-table--flavor-grid" id="flavor-snapshot">
+      <thead>
+        <tr>
+          <th></th>
+          <th style="color:#CC0000;">Hot</th>
+          <th style="color:#3BA226;">Mild</th>
+          <th style="color:#F5D623;">Mango</th>
+          <th style="color:#1A1A1A;">Truffle</th>
+          <th style="color:#2B6EC2;">Sriracha</th>
+          <th style="color:#F5D623;">Thai</th>
+        </tr>
+      </thead>
+      <tbody id="snapshot-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">Loading from Supabase…</td></tr>
+      </tbody>
+    </table>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- 📦 ORDER DEMAND — What Each Order Needs (6 columns)           -->
+  <!-- ============================================================ -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2 class="section-header__title">📦 Order Demand</h2>
+    <span class="section-header__badge">Bottles by flavor</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table data-table--flavor-grid" id="order-demand">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th style="color:#CC0000;">Hot</th>
+          <th style="color:#3BA226;">Mild</th>
+          <th style="color:#F5D623;">Mango</th>
+          <th style="color:#1A1A1A;">Truffle</th>
+          <th style="color:#2B6EC2;">Sriracha</th>
+          <th style="color:#F5D623;">Thai</th>
+        </tr>
+      </thead>
+      <tbody id="demand-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- ============================================================ -->
-  <!-- PROCESS FLOW                                                  -->
+  <!-- 📊 GAP ANALYSIS — What We Need to Produce                     -->
   <!-- ============================================================ -->
-  <div class="process-flow">
-    Ingredients &rarr; Batches &rarr; Ollas (cook) &rarr; Drums (cool 2 days) &rarr; Bottles (pack) &rarr; Cases
+  <div class="section-header" style="margin-top:32px;">
+    <h2 class="section-header__title">📊 Gap Analysis</h2>
+    <span class="section-header__badge">Have vs Need</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table data-table--flavor-grid" id="gap-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th style="color:#CC0000;">Hot</th>
+          <th style="color:#3BA226;">Mild</th>
+          <th style="color:#F5D623;">Mango</th>
+          <th style="color:#1A1A1A;">Truffle</th>
+          <th style="color:#2B6EC2;">Sriracha</th>
+          <th style="color:#F5D623;">Thai</th>
+        </tr>
+      </thead>
+      <tbody id="gap-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 🧭 NEXT STEPS — Smart Suggestions                            -->
+  <!-- ============================================================ -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2 class="section-header__title">🧭 Next Steps</h2>
+    <span class="section-header__badge">Auto-generated</span>
+  </div>
+  <div class="next-steps-card" id="next-steps">
+    <p style="color:var(--muted);padding:16px;">Calculating…</p>
   </div>
 
 
@@ -918,121 +1077,7 @@
   </div>
 
 
-  <!-- ============================================================ -->
-  <!-- 🏭 WHAT WE HAVE — Inventory                                  -->
-  <!-- ============================================================ -->
-  <div class="section-header">
-    <h2 class="section-header__title">🏭 Inventory</h2>
-    <span class="section-header__badge">Updated Feb 8</span>
-  </div>
-
-  <div class="grid-2col">
-    <!-- Drums -->
-    <div>
-      <div class="data-table-wrap" style="margin-bottom:24px;">
-        <table class="data-table data-table--compact">
-          <thead><tr><th colspan="3" style="text-align:left;">Drums (Need Packing)</th></tr>
-          <tr><th>Flavor</th><th>Drums</th><th>Bottles Worth</th></tr></thead>
-          <tbody>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#CC0000;"></span>Hot</td><td class="col-num">0</td><td class="col-num">0</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#3BA226;"></span>Mild</td><td class="col-num">0</td><td class="col-num">0</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#F5D623;"></span>Mango</td><td class="col-num">2</td><td class="col-num">~1,250</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#1A1A1A;"></span>Truffle</td><td class="col-num">1</td><td class="col-num">~625</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#2B6EC2;"></span>Sriracha</td><td class="col-num">0</td><td class="col-num">0</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Packed Bottles -->
-    <div>
-      <div class="data-table-wrap" style="margin-bottom:24px;">
-        <table class="data-table data-table--compact">
-          <thead><tr><th colspan="3" style="text-align:left;">Packed Bottles (Ready to Ship)</th></tr>
-          <tr><th>Flavor</th><th>Bottles</th><th>Source</th></tr></thead>
-          <tbody>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#CC0000;"></span>Hot</td><td class="col-num">~442</td><td>Surplus + home + kitchen</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#3BA226;"></span>Mild</td><td class="col-num">~502</td><td>Feb 7 pack day surplus</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#F5D623;"></span>Mango</td><td class="col-num">48</td><td>8 six-packs pre-existing</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#1A1A1A;"></span>Truffle</td><td class="col-num">0</td><td>In drums — pack Wed</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#2B6EC2;"></span>Sriracha</td><td class="col-num">~40</td><td>Pre-existing</td></tr>
-            <tr><td class="col-name"><span class="flavor-dot" style="background:#F5D623;"></span>Thai</td><td class="col-num">~200</td><td>Pre-existing</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ============================================================ -->
-  <!-- 📊 DEMAND vs SUPPLY GAP                                      -->
-  <!-- ============================================================ -->
-  <div class="section-header">
-    <h2 class="section-header__title">📊 Demand Gap</h2>
-    <span class="section-header__badge">All Channels</span>
-  </div>
-  <div class="data-table-wrap">
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Flavor</th>
-          <th>EXP</th>
-          <th>Amazon</th>
-          <th>Faire/DTC</th>
-          <th>Total Need</th>
-          <th>Have</th>
-          <th>Gap</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="col-name"><span class="flavor-dot" style="background:#CC0000;"></span>Hot</td>
-          <td class="col-num">300</td>
-          <td class="col-num">75</td>
-          <td class="col-num">~48</td>
-          <td class="col-num" style="font-weight:700;">~423</td>
-          <td class="col-num">~442</td>
-          <td><span class="status-pill status-pill--green">OK (~19)</span></td>
-        </tr>
-        <tr>
-          <td class="col-name"><span class="flavor-dot" style="background:#3BA226;"></span>Mild</td>
-          <td class="col-num">180</td>
-          <td class="col-num">75</td>
-          <td class="col-num">~24</td>
-          <td class="col-num" style="font-weight:700;">~279</td>
-          <td class="col-num">~502</td>
-          <td><span class="status-pill status-pill--green">OK (~223)</span></td>
-        </tr>
-        <tr>
-          <td class="col-name"><span class="flavor-dot" style="background:#F5D623;"></span>Mango</td>
-          <td class="col-num">180</td>
-          <td class="col-num">0</td>
-          <td class="col-num">~18</td>
-          <td class="col-num" style="font-weight:700;">~198</td>
-          <td class="col-num">48 + drums</td>
-          <td><span class="status-pill status-pill--yellow">Pack Wed</span></td>
-        </tr>
-        <tr>
-          <td class="col-name"><span class="flavor-dot" style="background:#1A1A1A;"></span>Truffle</td>
-          <td class="col-num">60</td>
-          <td class="col-num">0</td>
-          <td class="col-num">~12</td>
-          <td class="col-num" style="font-weight:700;">~72</td>
-          <td class="col-num">0 + drums</td>
-          <td><span class="status-pill status-pill--yellow">Pack Wed</span></td>
-        </tr>
-        <tr>
-          <td class="col-name"><span class="flavor-dot" style="background:#2B6EC2;"></span>Sriracha</td>
-          <td class="col-num">120</td>
-          <td class="col-num">0</td>
-          <td class="col-num">~12</td>
-          <td class="col-num" style="font-weight:700;">~132</td>
-          <td class="col-num">~40</td>
-          <td><span class="status-pill status-pill--red">Gap ~92</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- (Inventory + Demand replaced by Flavor Snapshot + Order Demand + Gap Analysis above) -->
 
 
   <!-- ============================================================ -->
@@ -1801,6 +1846,248 @@
 <!-- Supabase CDN                                                  -->
 <!-- ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- ============================================================ -->
+<!-- 🔥 PRODUCTION TABLES — Supabase-backed flavor grids            -->
+<!-- ============================================================ -->
+<script>
+(function() {
+  var SUPA_URL = 'https://muowpjabnjkqgwgzfmoj.supabase.co';
+  var SUPA_KEY = 'sb_publishable_e-Kx6L_hOKZaG1toGiKidw__weM4n7n';
+  var sb = null;
+  try { sb = supabase.createClient(SUPA_URL, SUPA_KEY); } catch(e) {}
+
+  var FLAVORS = ['hot','mild','mango','truffle','sriracha','thai'];
+  var COLORS = { hot:'#CC0000', mild:'#3BA226', mango:'#F5D623', truffle:'#1A1A1A', sriracha:'#2B6EC2', thai:'#F5D623' };
+
+  function fmt(n) {
+    if (n === 0) return '—';
+    return n.toLocaleString();
+  }
+  function cellClass(n, threshold) {
+    if (n === 0) return 'cell-zero';
+    if (n < 0) return 'cell-bad';
+    if (threshold && n < threshold) return 'cell-warn';
+    return '';
+  }
+
+  async function loadSettings(key) {
+    if (!sb) return null;
+    try {
+      var res = await sb.from('settings').select('value').eq('key', key).single();
+      return res.data ? res.data.value : null;
+    } catch(e) { return null; }
+  }
+
+  async function loadAllOrders() {
+    if (!sb) return [];
+    try {
+      var res = await sb.from('tango_orders').select('*').order('created_at');
+      return res.data || [];
+    } catch(e) { return []; }
+  }
+
+  async function boot() {
+    var packed = await loadSettings('tango_production_packed');
+    var drums = await loadSettings('tango_production_drums');
+    var demand = await loadSettings('tango_production_demand');
+    var allOrders = await loadAllOrders();
+
+    if (!packed || !drums) {
+      document.getElementById('snapshot-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No production data in Supabase yet.</td></tr>';
+      return;
+    }
+
+    // ── Build lookup maps ───────────────────────────────
+    var packedMap = {};
+    (packed.packed || []).forEach(function(p) { packedMap[p.flavor] = p.bottles || 0; });
+    var drumsMap = {};
+    (drums.drums || []).forEach(function(d) { drumsMap[d.flavor] = d; });
+
+    // ── TABLE 1: Flavor Snapshot ──────────────────────────
+    document.getElementById('snapshot-date').textContent = 'Updated ' + (packed.updated || '?');
+
+    var rows = [
+      { label: 'Packed Bottles', key: 'packed' },
+      { label: '6-Packs (cases)', key: 'cases' },
+      { label: 'Botes (drums)', key: 'drums' },
+      { label: 'Total Once Packed', key: 'total' }
+    ];
+
+    var html = '';
+    rows.forEach(function(row) {
+      html += '<tr><td class="col-name" style="font-weight:600;">' + row.label + '</td>';
+      FLAVORS.forEach(function(f) {
+        var val = 0;
+        if (row.key === 'packed') {
+          val = packedMap[f] || 0;
+        } else if (row.key === 'cases') {
+          val = Math.floor((packedMap[f] || 0) / 6);
+        } else if (row.key === 'drums') {
+          val = drumsMap[f] ? drumsMap[f].drums : 0;
+        } else if (row.key === 'total') {
+          val = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
+        }
+        var cls = val === 0 ? 'cell-zero' : '';
+        html += '<td class="' + cls + '">' + fmt(val) + '</td>';
+      });
+      html += '</tr>';
+    });
+    document.getElementById('snapshot-body').innerHTML = html;
+
+    // ── TABLE 2: Order Demand ─────────────────────────────
+    // Only show orders that have items (processing/new)
+    var activeOrders = allOrders.filter(function(o) {
+      return o.items && o.items.length > 0 && (o.stage === 'new' || o.stage === 'processing');
+    });
+
+    var demandTotals = {};
+    FLAVORS.forEach(function(f) { demandTotals[f] = 0; });
+
+    var dhtml = '';
+    activeOrders.forEach(function(order) {
+      var flavorMap = {};
+      (order.items || []).forEach(function(item) {
+        var key = item.flavor.toLowerCase();
+        flavorMap[key] = (item.cases || 0) * 6;
+      });
+
+      dhtml += '<tr><td class="col-name" style="font-weight:600;">' + (order.channel || '') + '<br><span style="font-size:11px;color:var(--muted);">' + (order.title || '') + '</span></td>';
+      FLAVORS.forEach(function(f) {
+        var val = flavorMap[f] || 0;
+        demandTotals[f] += val;
+        var cls = val === 0 ? 'cell-zero' : '';
+        dhtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
+      });
+      dhtml += '</tr>';
+    });
+
+    // Add demand from non-order channels if we have demand data
+    if (demand && demand.demand) {
+      var extraRow = {};
+      FLAVORS.forEach(function(f) { extraRow[f] = 0; });
+      demand.demand.forEach(function(d) {
+        var f = d.flavor;
+        var orderDemand = demandTotals[f] || 0;
+        var otherDemand = (d.amazon || 0) + (d.faire_dtc || 0) + (d.samples || 0);
+        if (otherDemand > 0) extraRow[f] = otherDemand;
+      });
+      var hasExtras = FLAVORS.some(function(f) { return extraRow[f] > 0; });
+      if (hasExtras) {
+        dhtml += '<tr><td class="col-name" style="font-weight:600;">Amazon + Faire<br><span style="font-size:11px;color:var(--muted);">DTC + Samples</span></td>';
+        FLAVORS.forEach(function(f) {
+          var val = extraRow[f];
+          demandTotals[f] += val;
+          var cls = val === 0 ? 'cell-zero' : '';
+          dhtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
+        });
+        dhtml += '</tr>';
+      }
+    }
+
+    // Totals row
+    dhtml += '<tr class="row-total"><td>Total Need</td>';
+    FLAVORS.forEach(function(f) {
+      dhtml += '<td>' + fmt(demandTotals[f]) + '</td>';
+    });
+    dhtml += '</tr>';
+    document.getElementById('demand-body').innerHTML = dhtml;
+
+    // ── TABLE 3: Gap Analysis ─────────────────────────────
+    var ghtml = '';
+
+    // Row 1: Total need
+    ghtml += '<tr><td class="col-name" style="font-weight:600;">Total Need</td>';
+    FLAVORS.forEach(function(f) {
+      var cls = demandTotals[f] === 0 ? 'cell-zero' : '';
+      ghtml += '<td class="' + cls + '">' + fmt(demandTotals[f]) + '</td>';
+    });
+    ghtml += '</tr>';
+
+    // Row 2: Packed bottles (have)
+    ghtml += '<tr><td class="col-name" style="font-weight:600;">Packed (have)</td>';
+    FLAVORS.forEach(function(f) {
+      var val = packedMap[f] || 0;
+      var cls = val === 0 ? 'cell-zero' : 'cell-ok';
+      ghtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
+    });
+    ghtml += '</tr>';
+
+    // Row 3: In drums
+    ghtml += '<tr><td class="col-name" style="font-weight:600;">In Drums</td>';
+    FLAVORS.forEach(function(f) {
+      var val = drumsMap[f] ? drumsMap[f].bottles_worth : 0;
+      var cls = val === 0 ? 'cell-zero' : 'cell-ok';
+      ghtml += '<td class="' + cls + '">' + fmt(val) + '</td>';
+    });
+    ghtml += '</tr>';
+
+    // Row 4: Gap (need - have - drums)
+    ghtml += '<tr class="row-total"><td>Gap</td>';
+    var gaps = {};
+    FLAVORS.forEach(function(f) {
+      var need = demandTotals[f];
+      var have = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
+      var gap = need - have;
+      gaps[f] = gap;
+      var cls = '';
+      if (gap <= 0) cls = 'cell-ok';
+      else cls = 'cell-bad';
+      ghtml += '<td class="' + cls + '">' + (gap <= 0 ? '✅ +' + fmt(Math.abs(gap)) : '❌ ' + fmt(gap)) + '</td>';
+    });
+    ghtml += '</tr>';
+    document.getElementById('gap-body').innerHTML = ghtml;
+
+    // ── SECTION 4: Next Steps ─────────────────────────────
+    var steps = [];
+
+    // Check what needs cooking
+    var needCook = [];
+    FLAVORS.forEach(function(f) {
+      if (gaps[f] > 0) needCook.push({ flavor: f, gap: gaps[f] });
+    });
+    if (needCook.length > 0) {
+      var cookList = needCook.map(function(c) {
+        return '<strong>' + c.flavor.charAt(0).toUpperCase() + c.flavor.slice(1) + '</strong> (' + fmt(c.gap) + ' bottles short)';
+      }).join(', ');
+      steps.push('Schedule cook day for: ' + cookList + '. Mon Feb 24 planned — 4hr cook shift ($400).');
+    }
+
+    // Check what needs packing from drums
+    var needPack = [];
+    FLAVORS.forEach(function(f) {
+      var drumVal = drumsMap[f] ? drumsMap[f].bottles_worth : 0;
+      if (drumVal > 0 && demandTotals[f] > (packedMap[f] || 0)) {
+        var toPack = Math.min(drumVal, demandTotals[f] - (packedMap[f] || 0));
+        needPack.push({ flavor: f, bottles: toPack });
+      }
+    });
+    if (needPack.length > 0) {
+      var packList = needPack.map(function(p) {
+        return '<strong>' + p.flavor.charAt(0).toUpperCase() + p.flavor.slice(1) + '</strong> (' + fmt(p.bottles) + ')';
+      }).join(', ');
+      steps.push('Pack from drums: ' + packList + '. Thu Feb 27 planned — 4hr pack shift ($1,000).');
+    }
+
+    // Check Mild labels
+    steps.push('Order more <strong>Mild labels</strong> — only ~500 left, need 180+ for EXP alone.');
+
+    // EXP pickup
+    steps.push('Contact <strong>Jason at EXP</strong> — push pickup to ~Feb 28 (was Feb 19). Ship complete, 140 cases.');
+
+    // Count Hots
+    steps.push('Do a real <strong>Hot bottle count</strong> next time at kitchen. Last confirmed: ~100 (Feb 17).');
+
+    var shtml = '';
+    steps.forEach(function(s, i) {
+      shtml += '<div class="next-step-item"><span class="next-step-num">' + (i + 1) + '</span><span class="next-step-text">' + s + '</span></div>';
+    });
+    document.getElementById('next-steps').innerHTML = shtml;
+  }
+
+  boot();
+})();
+</script>
 
 <!-- ============================================================ -->
 <!-- 📦 ORDERS PIPELINE — JavaScript (Supabase-backed)             -->
