@@ -260,6 +260,10 @@
 }
 
 
+/* Copy list button — smaller inline variant of .btn */
+#copy-deep-btn { font-size: 13px; padding: 8px 20px; }
+#copy-deep-btn::before { font-size: 13px; padding: 8px 20px; }
+
 /* ============================================================ */
 /* TWO-COLUMN GRID LAYOUT                                        */
 /* ============================================================ */
@@ -1117,6 +1121,60 @@
   </div>
 
   <!-- ============================================================ -->
+  <!-- 🍳 COOK PLANNER — Plan Your Ollas                            -->
+  <!-- ============================================================ -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2 class="section-header__title">🍳 Cook Planner</h2>
+    <span class="section-header__badge" id="cook-badge">Set ollas below</span>
+  </div>
+  <div class="data-table-wrap">
+    <table class="data-table data-table--flavor-grid" id="cook-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th style="color:#CC0000;">Hot</th>
+          <th style="color:#3BA226;">Mild</th>
+          <th style="color:#F5D623;">Mango</th>
+          <th style="color:#1A1A1A;">Truffle</th>
+          <th style="color:#2B6EC2;">Sriracha</th>
+          <th style="color:#F5D623;">Thai</th>
+        </tr>
+      </thead>
+      <tbody id="cook-body">
+        <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- 🥕 DEEP ORDER — Ingredient Shopping List                      -->
+  <!-- ============================================================ -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2 class="section-header__title">🥕 Deep Order</h2>
+    <span class="section-header__badge" id="deep-badge">Auto-calculated</span>
+  </div>
+  <div class="data-table-wrap" style="position:relative;">
+    <table class="data-table data-table--compact" id="deep-table">
+      <thead>
+        <tr>
+          <th>Ingredient</th>
+          <th>Need</th>
+          <th>Ordering</th>
+          <th>Est. Cost</th>
+          <th>Leftover</th>
+        </tr>
+      </thead>
+      <tbody id="deep-body">
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">Set ollas above to calculate…</td></tr>
+      </tbody>
+    </table>
+    <div style="padding:16px 20px;display:flex;align-items:center;gap:16px;justify-content:space-between;" id="deep-footer">
+      <span id="deep-total" style="font-family:var(--font-body);font-size:14px;font-weight:700;"></span>
+      <button class="btn btn--orange" data-content="📋 Copy List" id="copy-deep-btn" style="font-size:13px;padding:8px 20px;display:none;">📋 Copy List</button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
   <!-- 🧭 NEXT STEPS — Smart Suggestions                            -->
   <!-- ============================================================ -->
   <div class="section-header" style="margin-top:32px;">
@@ -1941,6 +1999,62 @@
   var FLAVORS = ['hot','mild','mango','truffle','sriracha','thai'];
   var DRUM_BOTTLES = 625;
 
+  // ── Recipe constants (confirmed Feb 2026) ──────────────────
+  var OLLA_YIELDS = { hot:325, mild:325, truffle:325, thai:325, mango:450, sriracha:450 };
+  var BATCHES_PER_OLLA = { hot:4, mild:4, truffle:4, thai:4, mango:2, sriracha:2 };
+
+  // Per-batch ingredient needs for standard flavors (Hot/Mild/Truffle/Thai)
+  // Derived from 3-olla / 12-batch baseline (400lb carrots, etc.)
+  var STD_BATCH = {
+    carrots:  { amt:33.33, unit:'lb' },
+    garlic:   { amt:12.5,  unit:'lb' },
+    lime:     { amt:1.67,  unit:'gal' },
+    culantro: { amt:3.5,   unit:'lb' },
+    habanero: { amt:1.67,  unit:'lb' },
+    acv:      { amt:3.33,  unit:'gal' },
+    salt:     { amt:4.17,  unit:'lb' }
+  };
+
+  // Per-batch for Sriracha
+  var SRI_BATCH = {
+    red_jalapeno: { amt:25, unit:'lb' },
+    garlic:       { amt:13, unit:'lb' },
+    sugar:        { amt:4,  unit:'lb' },
+    salt:         { amt:3,  unit:'lb' },
+    white_vinegar:{ amt:11, unit:'lb', kitchen:true },
+    water:        { amt:10, unit:'lb', kitchen:true }
+  };
+
+  // Per-batch for Mango (partial — only mango fruit known)
+  var MANGO_BATCH = {
+    mango_fruit: { amt:50, unit:'lb' },
+    carrots:     { amt:33.33, unit:'lb' },
+    garlic:      { amt:12.5,  unit:'lb' },
+    lime:        { amt:1.67,  unit:'gal' },
+    culantro:    { amt:3.5,   unit:'lb' },
+    habanero:    { amt:1.67,  unit:'lb' },
+    acv:         { amt:3.33,  unit:'gal' },
+    salt:        { amt:4.17,  unit:'lb' }
+  };
+
+  // Purchasable units from Deep + pricing
+  var UNITS = {
+    carrots:      { pkg:25,  unit:'lb',  label:'25lb bag',     name:'carrots',              pLo:18,    pHi:28 },
+    garlic:       { pkg:30,  unit:'lb',  label:'30lb box',     name:'garlic',               pLo:80,    pHi:109 },
+    lime:         { pkg:4,   unit:'gal', label:'case (4gal)',  name:'lime juice',           pLo:58,    pHi:58 },
+    culantro:     { pkg:14,  unit:'lb',  label:'14lb box',     name:'culantro',             pLo:69,    pHi:69 },
+    habanero:     { pkg:10,  unit:'lb',  label:'~10lb box',    name:'habanero',             pLo:28,    pHi:30 },
+    acv:          { pkg:4,   unit:'gal', label:'case (4gal)',  name:'apple cider vinegar',  pLo:38.75, pHi:38.75 },
+    salt:         { pkg:50,  unit:'lb',  label:'50lb bag',     name:'salt',                 pLo:13,    pHi:14 },
+    red_jalapeno: { pkg:25,  unit:'lb',  label:'~25lb case',   name:'red jalapeno',         pLo:44.75, pHi:44.75 },
+    sugar:        { pkg:50,  unit:'lb',  label:'50lb bag',     name:'cane sugar',           pLo:37,    pHi:37 },
+    mango_fruit:  { pkg:30,  unit:'lb',  label:'30lb case',    name:'mango',                pLo:46.50, pHi:46.50 }
+  };
+  var DELIVERY_FEE = 80;
+
+  // Global for copy button
+  var _deepListText = '';
+
   function fmt(n) { return n === 0 ? '—' : n.toLocaleString(); }
   function $(id) { return document.getElementById(id); }
 
@@ -1961,7 +2075,7 @@
   // BOOT — load everything, render everything
   // ══════════════════════════════════════════════════════════════
   async function boot() {
-    var [packed, drums, demand, timeline, cashflow, bills, ingOnHand, ingNeeded, materials, shifts, conversions, ordersRes] = await Promise.all([
+    var [packed, drums, demand, timeline, cashflow, bills, ingOnHand, ingNeeded, materials, shifts, conversions, ordersRes, cookPlanData] = await Promise.all([
       loadS('tango_production_packed'),
       loadS('tango_production_drums'),
       loadS('tango_production_demand'),
@@ -1973,7 +2087,8 @@
       loadS('tango_production_materials'),
       loadS('tango_production_shifts'),
       loadS('tango_production_conversions'),
-      sb ? sb.from('tango_orders').select('*').order('created_at') : { data: [] }
+      sb ? sb.from('tango_orders').select('*').order('created_at') : { data: [] },
+      loadS('tango_production_cook_plan')
     ]);
     var allOrders = (ordersRes && ordersRes.data) || [];
 
@@ -2135,6 +2250,203 @@
       renderNextSteps();
     }
     renderGap();
+
+    // ══════════════════════════════════════════════════════
+    // COOK PLANNER + INGREDIENT CALCULATOR
+    // ══════════════════════════════════════════════════════
+    var ollasPlan = {};
+    FLAVORS.forEach(function(f) { ollasPlan[f] = 0; });
+    if (cookPlanData && cookPlanData.ollas) {
+      FLAVORS.forEach(function(f) { ollasPlan[f] = cookPlanData.ollas[f] || 0; });
+    }
+
+    function getRecipeForFlavor(f) {
+      if (f === 'sriracha') return SRI_BATCH;
+      if (f === 'mango') return MANGO_BATCH;
+      return STD_BATCH;
+    }
+
+    function calcIngredients() {
+      var needs = {};
+      FLAVORS.forEach(function(f) {
+        var o = ollasPlan[f] || 0;
+        if (o <= 0) return;
+        var batches = o * BATCHES_PER_OLLA[f];
+        var recipe = getRecipeForFlavor(f);
+        Object.keys(recipe).forEach(function(ing) {
+          var r = recipe[ing];
+          if (r.kitchen) return;
+          if (!needs[ing]) needs[ing] = { amt:0, unit:r.unit };
+          needs[ing].amt += r.amt * batches;
+        });
+      });
+      return needs;
+    }
+
+    function renderCookPlan() {
+      var h = '';
+      var totalOllas = 0;
+      FLAVORS.forEach(function(f) { totalOllas += (ollasPlan[f] || 0); });
+
+      // Row 1: Ollas to Cook (editable)
+      h += '<tr><td class="col-name" style="font-weight:600;">Ollas to Cook</td>';
+      FLAVORS.forEach(function(f) {
+        h += '<td><input class="edit-input" type="number" min="0" max="9" data-field="ollas" data-flavor="' + f + '" value="' + (ollasPlan[f] || 0) + '" style="width:48px;"></td>';
+      });
+      h += '</tr>';
+
+      // Row 2: Bottles Produced (auto-calc)
+      h += '<tr><td class="col-name" style="font-weight:600;">Bottles Produced</td>';
+      FLAVORS.forEach(function(f) {
+        var v = (ollasPlan[f] || 0) * OLLA_YIELDS[f];
+        h += '<td class="' + (v === 0 ? 'cell-zero' : '') + '">' + fmt(v) + '</td>';
+      });
+      h += '</tr>';
+
+      // Row 3: Post-Cook Total (inventory + produced)
+      h += '<tr><td class="col-name" style="font-weight:600;">Post-Cook Total</td>';
+      FLAVORS.forEach(function(f) {
+        var have = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
+        var produced = (ollasPlan[f] || 0) * OLLA_YIELDS[f];
+        var total = have + produced;
+        h += '<td class="' + (total === 0 ? 'cell-zero' : '') + '">' + fmt(total) + '</td>';
+      });
+      h += '</tr>';
+
+      // Row 4: Surplus After Orders (post-cook - demand)
+      h += '<tr class="row-total"><td>Surplus After Orders</td>';
+      FLAVORS.forEach(function(f) {
+        var have = (packedMap[f] || 0) + (drumsMap[f] ? drumsMap[f].bottles_worth : 0);
+        var produced = (ollasPlan[f] || 0) * OLLA_YIELDS[f];
+        var surplus = have + produced - (demandTotals[f] || 0);
+        h += '<td class="' + (surplus < 0 ? 'cell-bad' : 'cell-ok') + '">' + (surplus >= 0 ? '+' : '') + fmt(surplus) + '</td>';
+      });
+      h += '</tr>';
+
+      $('cook-body').innerHTML = h;
+      $('cook-badge').textContent = totalOllas > 0 ? totalOllas + ' olla' + (totalOllas > 1 ? 's' : '') + ' planned' : 'Set ollas below';
+
+      renderDeepOrder();
+    }
+
+    function renderDeepOrder() {
+      var needs = calcIngredients();
+      var keys = Object.keys(needs);
+
+      if (keys.length === 0) {
+        $('deep-body').innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">Set ollas above to calculate…</td></tr>';
+        $('deep-total').textContent = '';
+        $('copy-deep-btn').style.display = 'none';
+        _deepListText = '';
+        return;
+      }
+
+      // Sort: carrots first, then garlic, lime, culantro, habanero, acv, salt, then sriracha-specific
+      var sortOrder = ['carrots','garlic','lime','culantro','habanero','acv','salt','red_jalapeno','sugar','mango_fruit'];
+      keys.sort(function(a, b) {
+        var ai = sortOrder.indexOf(a); if (ai < 0) ai = 99;
+        var bi = sortOrder.indexOf(b); if (bi < 0) bi = 99;
+        return ai - bi;
+      });
+
+      var h = '';
+      var totalCostLo = 0;
+      var totalCostHi = 0;
+      var lines = [];
+
+      keys.forEach(function(ing) {
+        var n = needs[ing];
+        var u = UNITS[ing];
+        if (!u) return;
+
+        var rawAmt = Math.round(n.amt * 10) / 10;
+        var pkgs = Math.ceil(n.amt / u.pkg);
+        var ordered = pkgs * u.pkg;
+        var leftover = Math.round((ordered - n.amt) * 10) / 10;
+
+        var costLo = pkgs * u.pLo;
+        var costHi = pkgs * u.pHi;
+        totalCostLo += costLo;
+        totalCostHi += costHi;
+
+        var costStr = u.pLo === u.pHi ? '$' + costLo.toFixed(0) : '$' + costLo.toFixed(0) + '–$' + costHi.toFixed(0);
+        var leftStr = leftover <= 0.5 ? '~0' : Math.round(leftover) + ' ' + n.unit;
+
+        // Need column
+        var needStr = Math.round(rawAmt) + ' ' + n.unit;
+        // Ordering column
+        var orderStr = Math.round(ordered) + n.unit + ' (' + pkgs + ' ' + u.label.split(' ').slice(0, -1).join(' ') + ')';
+        if (pkgs === 1) orderStr = Math.round(ordered) + n.unit + ' (1 ' + u.label + ')';
+        else orderStr = Math.round(ordered) + n.unit + ' (' + pkgs + ' ' + u.label + 's)';
+
+        h += '<tr>';
+        h += '<td class="col-name">' + u.name.charAt(0).toUpperCase() + u.name.slice(1) + '</td>';
+        h += '<td class="col-num">' + needStr + '</td>';
+        h += '<td class="col-num" style="font-weight:700;">' + Math.round(ordered) + ' ' + n.unit + '<br><span style="font-size:11px;color:var(--muted);">' + pkgs + ' × ' + u.label + '</span></td>';
+        h += '<td class="col-num">' + costStr + '</td>';
+        h += '<td class="col-num" style="color:' + (leftover <= 0.5 ? 'var(--muted)' : 'var(--green)') + ';">' + leftStr + '</td>';
+        h += '</tr>';
+
+        // Build copy line
+        if (n.unit === 'gal') {
+          lines.push(Math.round(ordered) + ' gallons ' + u.name + ' (' + pkgs + ' cases)');
+        } else {
+          if (pkgs === 1) {
+            lines.push(Math.round(ordered) + 'lb ' + u.name + ' (1 ' + u.label + ')');
+          } else {
+            lines.push(Math.round(ordered) + 'lb ' + u.name + ' (' + pkgs + ' ' + u.label + 's)');
+          }
+        }
+      });
+
+      // Delivery row
+      h += '<tr class="row-total"><td>Delivery</td><td></td><td></td><td class="col-num">$' + DELIVERY_FEE + '</td><td></td></tr>';
+      totalCostLo += DELIVERY_FEE;
+      totalCostHi += DELIVERY_FEE;
+
+      $('deep-body').innerHTML = h;
+
+      var totalStr = totalCostLo === totalCostHi
+        ? 'Est. Total: $' + totalCostLo.toFixed(0)
+        : 'Est. Total: $' + totalCostLo.toFixed(0) + ' – $' + totalCostHi.toFixed(0);
+      $('deep-total').textContent = totalStr;
+      $('copy-deep-btn').style.display = '';
+
+      _deepListText = lines.join('\n');
+    }
+
+    renderCookPlan();
+
+    // Cook planner edit handlers
+    $('cook-table').addEventListener('change', function(e) {
+      var inp = e.target;
+      if (!inp.classList.contains('edit-input')) return;
+      var flavor = inp.dataset.flavor;
+      var val = parseInt(inp.value) || 0;
+      if (val < 0) val = 0;
+      if (val > 9) val = 9;
+      inp.value = val;
+      ollasPlan[flavor] = val;
+
+      // Save to Supabase
+      var planObj = cookPlanData || {};
+      planObj.ollas = {};
+      FLAVORS.forEach(function(f) { planObj.ollas[f] = ollasPlan[f]; });
+      cookPlanData = planObj;
+      saveS('tango_production_cook_plan', planObj);
+
+      renderCookPlan();
+    });
+
+    // Copy list button
+    $('copy-deep-btn').addEventListener('click', function() {
+      if (!_deepListText) return;
+      navigator.clipboard.writeText(_deepListText).then(function() {
+        var btn = $('copy-deep-btn');
+        btn.setAttribute('data-content', '✅ Copied!');
+        setTimeout(function() { btn.setAttribute('data-content', '📋 Copy List'); }, 2000);
+      });
+    });
 
     // ══════════════════════════════════════════════════════
     // SECTION 4: Next Steps (auto-generated)
